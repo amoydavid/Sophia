@@ -1,0 +1,50 @@
+{%- macro comment_list(pagination) -%}
+<div class="comments">
+    {%- for topic in pagination.items %}
+        <div class="comment" id="comment{{ topic.id }}">
+            <a class="avatar-wrap">
+                <img class="avatar" src="{{ url_for("static", filename=topic.user.avatar) }}" width="50" height="50">
+            </a>
+
+            <div class="comment-main">
+                <div class="info">
+                    <a class="author" href="{{ url_for('user.show', user_id=topic.user_id) }}">{{ topic.user.name }}</a>
+                    <span class="create-time" title="{{ topic.created_at|datetime }}">{{ topic.created_at|friendly_datetime }}</span>
+                </div>
+                <div class="comment-content editor-style">
+                    {{ topic.content|gfm|safe }}
+                </div>
+                {% if topic.attachments %}
+                <div class="comment-attachments">
+                {% for atta in topic.attachments %}
+                <a target="_blank" href="{{ url_for('uploaded_file', filename=atta.path) }}"><img src="{{ url_for('uploaded_file', filename=atta.path, size=120) }}"></a>
+                {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    {%- endfor %}
+</div>
+{%- endmacro %}
+{%- macro comment_form(url, form) -%}
+<div class="comment-form">
+    <form action="{{ url }}" method='post'>
+        <fieldset>
+            <legend>评论</legend>
+            {{ form.csrf_token }}
+            <div class="controls-row">
+                {{ form.content(class='span10',col=50,rows=5,tabindex=1,placeholder='评论内容') }}
+            </div>
+            <div class="controls-row">
+                <span id="uploadBtnWrap" class="fl"></span>
+                <div id="uploadProgressBar" class="progress hide" style="max-width: 200px">
+                    <div class="bar" style="width: 0%;"></div>
+                </div>
+                <div id="attachments-preview">
+                </div>
+            </div>
+            <input type="submit" value="保存" class="btn btn-primary" tabindex="2">
+        </fieldset>
+    </form>
+</div>
+{%- endmacro %}

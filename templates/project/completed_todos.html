@@ -1,0 +1,65 @@
+{% extends 'layout/base.html' %}
+{% from '_helpers.html' import render_pagination %}
+{% from 'project/_project_todos.html' import head_js with context%}
+{% block title %}已完成的任务{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="span18" id="page-completed-todos">
+        <ul class="breadcrumb">
+            <li>项目：<a href="{{ url_for("project_index", project_id=project.id) }}">{{ project.name }}</a><span class="divider">/</span></li>
+            <li>已完成的任务</li>
+        </ul>
+        {%- if todos %}
+        <div>
+        {%- for todo in todos.items %}
+            {%- if last_todo %}
+                {%- set last_date = last_todo.finished_at|datetime('%Y%m%d') %}
+                {%- set now_date = todo.finished_at|datetime('%Y%m%d') %}
+                {%- if now_date != last_date %}
+                {%- set is_new_date = True  %}
+                {%- else %}
+                {%- set is_new_date = False  %}
+                {%- endif %}
+            {%- else %}
+                {%- set is_new_date = True  %}
+                {%- set is_first_date = True  %}
+            {%- endif %}
+        {%- if is_new_date %}
+            {%- if not is_first_date %}
+                </div>
+            </div><!--/day-->
+            {%- endif %}
+            {%- set is_first_date = False %}
+            <div class="day row">
+                <div class="hd span2">
+                <div class="m-d">
+                {{ todo.finished_at|datetime('%m/%d') }}
+                </div>
+                <div class="w">{{ todo.finished_at|weekday }}</div>
+                </div>
+                <div class="bd span16">
+        {%- endif %}
+            <div class="todo">
+                <i class="icon-check"></i>&nbsp;<a href="{{ url_for('todo_show', todo_id=todo.id) }}">{{ todo.subject }}</a>
+                <a class="label" href="{{ url_for('todolist_show', list_id=todo.list_id) }}">{{ todo.todolist.name }}</a>
+                <a class="label" href="{{ url_for('user.show', user_id=todo.finish_uid) }}">由 {{ todo.finish_user.name }} 完成</a>
+                {% if todo.point %}<span class="label">{{ todo.point }} point</span>{% endif %}
+            </div>
+        {%- set last_todo = todo %}
+        {%- endfor %}
+                </div>
+            </div><!--/day-->
+            <div class="more">
+                {{ render_pagination(todos, 'project_todo_status', project_id=project.id, status=status) }}
+            </div>
+        </div>
+        {%- else %}
+            <div class="well-small">还没有完成的任务</div>
+        {%- endif %}
+    </div>
+    <div class="span6">
+        {% from '_helpers.html' import project_sidebar %}
+        {{ project_sidebar(project) }}
+    </div>
+</div>
+{% endblock %}

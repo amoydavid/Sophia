@@ -1,0 +1,9 @@
+Flask
+gunicorn
+flask-sqlalchemy
+mysql-python
+Flask-Login
+flask-bcrypt
+flask-wtf
+flask-restful
+PIL

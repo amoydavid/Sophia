@@ -1,0 +1,141 @@
+{% macro head_js() %}
+<link rel="stylesheet" href="{{ url_for("static", filename='css/datepicker.css') }}" />
+<link rel="stylesheet" href="{{ url_for("static", filename='css/jquery.pnotify.default.css') }}" />
+<script src="{{ url_for("static",filename='js/underscore-min.js') }}"></script>
+<script src="{{ url_for("static",filename='js/backbone-min.js') }}"></script>
+<script src="{{ url_for("static",filename='js/mustache.js') }}"></script>
+<script src="{{ url_for("static",filename='js/jquery.pnotify.min.js') }}"></script>
+<script src="{{ url_for("static",filename='js/todo.js') }}"></script>
+<script src="{{ url_for("static",filename='js/bootstrap-datepicker.js') }}"></script>
+<script src="{{ url_for("static",filename='js/locales/bootstrap-datepicker.zh-CN.js') }}"></script>
+<script src="{{ url_for("static",filename='js/swfupload/swfupload.js') }}"></script>
+{% endmacro %}
+{% macro todolist_html() %}
+<div id="todo-list-wrapper" class="todolists">
+</div>
+{%- if not todolist %}
+<div class="todolists-completed-wrap">
+    {%- if done_lists %}
+    <div class="todolists-completed">
+        <h5>已完成的任务列表</h5>
+        {%- for list in done_lists %}
+        <a href="{{ url_for('todolist_show', list_id=list.id) }}">{{ list.name }}</a>
+        {%- endfor %}
+    </div>
+    {%- endif %}
+    <div class="todo-history-link">
+        <a href="{{ url_for('project_todo_status', project_id=project.id, status='completed') }}">查看所有已完成任务</a>
+    </div>
+</div>
+{%- endif %}
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">指派任务</h3>
+    </div>
+    <div class="modal-body">
+        <form>
+            <label for="assignee">指派给</label>
+            <select class="assignee" id="assignee">
+                <option value="0">暂不指定</option>
+                <option disabled="disabled">-----</option>
+                {%- for user in team_users %}
+                    <option value="{{ user.id }}">{{ user.name }}</option>
+                {%- endfor %}
+            </select>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+        <button class="btn btn-primary">保存</button>
+    </div>
+</div>
+{% endmacro %}
+{% macro inline_js() %}
+    <script>
+        G.team_users = [];
+        {%- for user in team_users %}
+            G.team_users.push({id:{{user.id}},name:'{{ user.name }}'});
+        {%- endfor %}
+    </script>
+    {%- raw %}
+        <script type="template" id='todo-template'>
+            <div class="todo-wrap">
+                <input type="checkbox" name="todo-done" class='todo-checkbox' data-todo-id='{{id}}' {{#done}} checked="checked"{{/done}}/>
+                <!--span class="runner on" title="xx正在做这条任务">
+                    <img alt="xx" class="avatar" src="xx">
+                </span-->
+                <span class="todo-content"><a href="/todo/{{ id }}/">{{ subject }}</a></span>
+                <a href="/todo/{{ id }}/" class="badge">{{ reply_count }}评论</a>
+                {{#done}}
+                <span class="badge todo-finished badge-info">{{ finish_user.name }} {{ finished_at }}</span>
+                {{/done}}
+                {{^done}}
+                <a href="javascript:" class="badge todo-assignee"></a>
+                <a href="javascript:" class="badge due-date">没有截止时间</a>
+                {{#point}}<span class="badge point">{{ point }} point</span>{{/point}}
+                {{/done}}
+            </div>
+        </script>
+        <script type="template" id='todolist-template'>
+            <div class="title">
+                {{# show_list_title }}
+                <h4><a href="/lists/{{ id }}">{{ name }}</a></h4>
+                {{/show_list_title}}
+                <ul id="todos-{{ id }}" class="todos todos-uncompleted">
+                </ul>
+                <ul class="todo-new-wrap clearfix">
+                    <li class="todo-form new">
+                        <button type="button" class="btn btn-small btn-new-todo">添加新任务</button>
+                    </li>
+                    <li class="todo-form form-wrap hide">
+                        <form class="form">
+                            <input type="text" tabindex="1" name="todo_content" class="todo-content input-xxlarge" placeholder="简单描述任务内容" data-validate="custom" data-validate-msg=""/>
+                            <div class="todo-conditions">
+                                <div class="condition">
+                                    <span>截止: </span>
+                                    <a tabindex="3" href="javascript:;" class="link-todo-due date"><span class="due add-on">没有截止时间</span>
+                                        <input type="hidden" class='new-todo-due-date'/> </a>
+                                </div>
+                                <div class="condition">
+                                    <span>指派给: </span>
+                                    <select tabindex="2" name="assignee_uid" class="todo-assignee">
+                                        <option value="0">暂不指定</option>
+                                        <option disabled="">-----</option>
+                                        {{#team_users }}
+                                        <option value="{{ id }}">{{ name }}</option>
+                                        {{/team_users}}
+                                    </select>
+                                </div>
+                                <div class="condition">
+                                    <span>分值: </span>
+                                    <input type="number" class='new-todo-point input-mini' value="0"/>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <div class="create-buttons">
+                                    <button tabindex="1" type="button" class="btn btn-primary btn-create-todo" data-disable-with="正在保存...">保存，继续添加</button>
+                                    <button tabindex="3" type="button" class="btn btn-cancel-todo">取消</button>
+                                </div>
+                            </div>
+                        </form>
+                    </li>
+                </ul>
+                <ul id="todos-{{ id }}-completed" class="todos todos-completed">
+                </ul>
+            </div>
+        </script>
+    {%- endraw %}
+    <script>
+        G.project_id = {{ project.id }};
+        $(document).ready(function(){
+            var lists = new TodoList;
+            lists.reset({{ todolists_json|safe }});
+            _.map(lists.models, function(todolist){
+                var todo_view = new TodoListView({model:todolist});
+                todo_view.render();
+                $('#todo-list-wrapper').prepend(todo_view.$el);
+            });
+        });
+    </script>
+{% endmacro %}

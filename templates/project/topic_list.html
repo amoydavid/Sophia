@@ -1,0 +1,42 @@
+{% extends 'layout/base.html' %}
+{% from '_helpers.html' import render_pagination %}
+{% block title %}{{ project.name }}{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="span18" id="page-project">
+            <h2>所有的讨论 <a href="{{ url_for('topic_create', project_id=project.id) }}" class="btn pull-right btn-small">发起新的讨论</a></h2>
+            <div class="messages">
+                {% for topic in pagination.items %}
+                    <div class="message">
+                        <a href="#"><img src="{{ url_for("static", filename=topic.user.avatar) }}" class="avatar"/></a>
+                        <div class="name">
+                            {{ topic.user.name }}
+                        </div>
+                        {%- if topic.all_attachments %}
+                        <div class="attachments">
+                            {% for atta in topic.all_attachments %}
+                                <a href="{{ url_for('uploaded_file', filename=atta.path) }}" target="_blank"><img src="{{ url_for('uploaded_file', filename=atta.path, size=30) }}" class="attachment"/></a>
+                            {% endfor %}
+                        </div>
+                        {%- endif %}
+                        <a href="{{ url_for('topic_detail', topic_id = topic.id) }}" class="message-link">
+                            <span class="message-title">{{ topic.subject }}</span>
+                            <span class="message-content">{{ topic.content }}</span>
+                        </a>
+                        <span class="time" title="{{ topic.updated_at|datetime }}">{{ topic.updated_at|friendly_datetime }}</span>
+                        <a href="{{ url_for('topic_detail', topic_id = topic.id) }}" class="comments-count"><span class="badge">{{ topic.reply_count }}</span></a>
+                    </div>
+                {% endfor %}
+                <div class="more">
+                    {{ render_pagination(pagination, 'topic_list', project_id=project.id)  }}
+                </div>
+            </div>
+        </div>
+        <div class="span6">
+            {% from '_helpers.html' import project_sidebar %}
+            {{ project_sidebar(project) }}
+        </div>
+    </div>
+
+
+{% endblock %}

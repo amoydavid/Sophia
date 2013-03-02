@@ -1,0 +1,180 @@
+{% extends 'layout/base.html' %}
+{% from '_helpers.html' import render_pagination %}
+{% from 'project/_project_todos.html' import head_js with context%}
+{% block title %}{{ todo.subject }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="span18" id="page-todo">
+        <ul class="breadcrumb">
+            <li>项目：<a href="{{ url_for("project_index", project_id=todo.project.id) }}">{{ todo.project.name }}</a><span class="divider">/</span></li>
+            <li><a href="{{ url_for("project_todos", project_id=todo.project.id) }}">所有任务</a><span class="divider">/</span></li>
+            <li><a href="{{ url_for("todolist_show", list_id=todo.list_id) }}">{{ todo.todolist.name }}</a><span class="divider">/</span></li>
+            <li>查看任务</li>
+        </ul>
+        <div id="todo-wrap" class="content">
+        </div>
+        <div class="object-attachments">
+            <div class="label">所有附件</div>
+            <div class="items">
+                {% for atta in todo.attachments %}
+                <a href="{{ url_for('uploaded_file', filename=atta.path) }}" target="_blank"><img src="{{ url_for('uploaded_file', filename=atta.path, size=120) }}"/></a>
+                {% endfor %}
+            </div>
+        </div>
+        {% from 'project/_topic_helpers.html' import comment_form,comment_list %}
+        {{ comment_list(pagination) }}
+        <div class="more">
+            {{ render_pagination(pagination, 'todo_show', todo_id=todo.id)  }}
+        </div>
+        {{ comment_form(url_for('todo_show', todo_id=todo.id), form) }}
+    </div>
+    <div class="span6">
+        {% from '_helpers.html' import project_sidebar %}
+        {{ project_sidebar(todo.project) }}
+    </div>
+</div>
+
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">指派任务</h3>
+    </div>
+    <div class="modal-body">
+        <form>
+            <label for="assignee">指派给</label>
+            <select class="assignee" id="assignee">
+                <option value="0">暂不指定</option>
+                <option disabled="disabled">-----</option>
+                {%- for user in team_users %}
+                    <option value="{{ user.id }}">{{ user.name }}</option>
+                {%- endfor %}
+            </select>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+        <button class="btn btn-primary">保存</button>
+    </div>
+</div>
+{% raw %}
+<script type="template" id='todo-template'>
+    <div class="todo-wrap">
+        <div class="todo-content">
+            <input type="checkbox" name="todo-done" class='todo-checkbox' data-todo-id='{{id}}' {{#done}} checked="checked"{{/done}}/>
+            <!--span class="runner on" title="xx正在做这条任务">
+                <img alt="xx" class="avatar" src="xx">
+            </span-->
+            {{ subject }}
+        </div>
+        <div class='todo-badges'>
+        {{#done}}
+        <span class="badge todo-finished badge-info">{{ finish_user.name }} 完成于 {{ finished_at }}</span>
+        {{/done}}
+        {{^done}}
+        <a href="javascript:" class="badge todo-assignee"></a>
+        <a href="javascript:" class="badge due-date">没有截止时间</a>
+        <span class="badge">由 {{ creator.name }} 创建</span>
+        {{/done}}
+        <span class="badge">{{ reply_count }}评论{{#point}}, {{ point }} point{{/point}}</span>
+        </div>
+    </div>
+</script>
+{% endraw %}
+
+{% endblock %}
+{% block head_js %}
+    {{ head_js() }}
+{% endblock %}
+{% block page_js %}
+{% raw %}
+<script id="attachment-template" type="template">
+<div id="attachment-{{ id }}" class="fl attachment-item">
+<img src='{{ url }}?size=50' /><br/>
+<input type="hidden" value="{{ id }}" name="attachment">
+<a href="javascript:;">删除</a>
+</div>
+</script>
+{% endraw %}
+<script>
+var todo = new Todo({{ todo|safe }});
+var todoView = new TodoView({model:todo,tagName:'div'});
+todoView.isSingle = true;
+todoView.render();
+$('#todo-wrap').html(todoView.$el);
+
+
+function fileQueue(){
+
+}
+
+function uploadStart(file) {
+    try {
+        /* I don't want to do any file validation or anything,  I'll just update the UI and
+         return true to indicate that the upload should start.
+         It's important to update the UI here because in Linux no uploadProgress events are called. The best
+         we can do is say we are uploading.
+         */
+        $('#uploadProgressBar').show().find('.bar').css('width', 0);
+    }
+    catch (ex) {}
+
+    return true;
+}
+
+function uploadProgress(file, bytesLoaded, bytesTotal) {
+    try {
+        var percent = Math.ceil((bytesLoaded / bytesTotal) * 100);
+        $('#uploadProgressBar .bar').css('width', percent+'%');
+    } catch (ex) {
+        this.debug(ex);
+    }
+}
+
+function uploadSuccess(file, serverData) {
+    try {
+        $('#uploadProgressBar').hide();
+        if(serverData){
+            var json = eval('(' + $.trim(serverData) + ')');
+            var html = Mustache.render($('#attachment-template').html(), json);
+            $('#attachments-preview').append(html);
+        }
+    } catch (ex) {
+        this.debug(ex);
+    }
+}
+
+function fileDialogComplete(numFilesSelected, numFilesQueued) {
+    try {
+        /* I want auto start the upload and I can do that here */
+        this.startUpload();
+    } catch (ex)  {
+        this.debug(ex);
+    }
+}
+
+var swfu;
+
+window.onload = function () {
+    swfu = new SWFUpload({
+        file_post_name: "file",
+        file_upload_limit : 100,
+        file_queue_limit : 0,
+        upload_url : "{{ url_for('api.upload_file') }}",
+        flash_url : "{{ url_for("static",filename='js/swfupload/swfupload.swf') }}",
+        file_size_limit : "20 MB",
+        button_width: "65",
+        button_height: "29",
+        button_placeholder_id: "uploadBtnWrap",
+        button_text:'上传附件',
+        file_queued_handler:fileQueue,
+        file_dialog_complete_handler : fileDialogComplete,
+        upload_start_handler : uploadStart,
+        upload_progress_handler : uploadProgress,
+        upload_success_handler : uploadSuccess
+    });
+};
+$('.attachment-item a').bind('click', function(){
+    $(this).parent().remove();
+})
+</script>
+{% endblock %}

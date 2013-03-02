@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    {%- block head_meta%}{%- endblock %}
+    {%- block head %}
+    <link rel="stylesheet" href="{{ url_for("static", filename='css/site.css') }}" />
+    <link rel="stylesheet" href="{{ url_for("static", filename='css/doc.css') }}" />
+
+    <script src="{{ url_for("static",filename='js/jquery-1.8.3.min.js') }}"></script>
+    <script src="{{ url_for("static",filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for("static",filename='js/site.js') }}"></script>
+    {% block head_js %}{% endblock %}
+    <title>{% block all_title %}{% block title %}{% endblock %} - {{ g.app.name }}{% endblock %}</title>
+    {%- endblock %}
+</head>
+<body>
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="/">{{ g.app.name }}</a>
+            <div class="nav-collapse" id="main-menu">
+                <ul class="nav" id="main-menu-left">
+                    <li><a href="{{ url_for("run") }}">项目</a></li>
+                    <li><a href=".">回顾</a></li>
+                    <li><a href=".">团队</a></li>
+                    <li><a href=".">我自己</a></li>
+                    <li><a href=".">消息(0)</a></li>
+                </ul>
+                <ul class="nav pull-right" id="main-menu-right">
+                    {% if current_user.is_authenticated() %}
+                        <li><a href=".">{{ current_user.name }}</a></li>
+                        <li><a href="{{ url_for('user.logout') }}">退出</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('user.login') }}">登录</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="content" class="container">
+    {% with messages = get_flashed_messages(category_filter=["error"]) %}
+        {% if messages %}
+            <div class="alert alert-error alert-block">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <ul>
+                    {%- for msg in messages %}
+                        <li>{{ msg }}</li>
+                    {% endfor -%}
+                </ul>
+            </div>
+        {% endif %}
+    {% endwith %}
+    {% with messages = get_flashed_messages(category_filter=["message"]) %}
+        {% if messages %}
+            <div class="alert alert-success alert-block">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <ul>
+                    {%- for msg in messages %}
+                        <li>{{ msg }}</li>
+                    {% endfor -%}
+                </ul>
+            </div>
+        {% endif %}
+    {% endwith %}
+    {% block banner%}{% endblock %}
+    {% block content %}{% endblock %}
+</div>
+<div id="footer" class="container">
+    {% block footer %}
+        &copy; Copyright 2013. {% if not current_user.is_authenticated() %}<a href="{{ url_for('user.login') }}">登录</a>{% endif %}
+    {% endblock %}
+</div>
+{% if not g.app.debug %}
+<div style="display: none">
+    <script type="text/javascript">
+        var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+        document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fa3b3362964eba4c8a83e3179851e70f7' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+</div>
+{% endif %}
+<script>G.user = {id:{{current_user.id}},name:'{{ current_user.name }}'};</script>
+{% block page_js %}{% endblock %}
+</body>
+</html>

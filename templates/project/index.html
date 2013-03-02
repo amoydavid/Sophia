@@ -1,0 +1,52 @@
+{% extends 'layout/base.html' %}
+{% from 'project/_project_todos.html' import head_js,inline_js, todolist_html with context%}
+{% block title %}{{ project.name }}{% endblock %}
+{% block head_js %}
+{{ head_js() }}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="span18" id="page-project">
+            <div class="project-header">
+                <div class="project-title">{{ project.name }}</div>
+                <div class="project-desc">{{ project.subject }}</div>
+            </div>
+            <h2><a href="{{ url_for('topic_list', project_id=project.id) }}">讨论</a> <a href="{{ url_for('topic_create', project_id=project.id) }}" class="btn pull-right btn-small">发起新的讨论</a></h2>
+            <div class="messages">
+                {% for topic in topics %}
+                <div class="message">
+                <a href="{{ url_for('user.show', user_id=topic.user_id) }}"><img src="{{ url_for("static", filename=topic.user.avatar) }}" class="avatar"/></a>
+                <div class="name">
+                    {{ topic.user.name }}
+                </div>
+                {%- if topic.all_attachments %}
+                    <div class="attachments">
+                        {% for atta in topic.all_attachments %}
+                            <a href="{{ url_for('uploaded_file', filename=atta.path) }}" target="_blank"><img src="{{ url_for('uploaded_file', filename=atta.path, size=30) }}" class="attachment"/></a>
+                        {% endfor %}
+                    </div>
+                {%- endif %}
+                <a href="{{ url_for('topic_detail', topic_id = topic.id) }}" class="message-link">
+                    <span class="message-title">{{ topic.subject }}</span>
+                    <span class="message-content">{{ topic.content }}</span>
+                </a>
+                <span class="time" title="{{ topic.updated_at|datetime }}">{{ topic.updated_at|friendly_datetime }}</span>
+                <a href="{{ url_for('topic_detail', topic_id = topic.id) }}" class="comments-count"><span class="badge">{{ topic.reply_count }}</span></a>
+                </div>
+                {% endfor %}
+                <div class="more">
+                <a href="{{ url_for('topic_list', project_id=project.id) }}">查看所有{{ project.topic_count }}条讨论</a>
+                </div>
+            </div>
+            <h2><a href="{{ url_for('project_todos', project_id=project.id) }}">任务</a> <a href="{{ url_for('todolist_create', project_id=project.id) }}" class="btn pull-right btn-small">添加任务列表</a></h2>
+            {{ todolist_html() }}
+        </div>
+        <div class="span6">
+            {% from '_helpers.html' import project_sidebar %}
+            {{ project_sidebar(project) }}
+        </div>
+    </div>
+{% endblock %}
+{% block page_js %}
+{{ inline_js() }}
+{% endblock %}

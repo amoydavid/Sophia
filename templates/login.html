@@ -1,0 +1,38 @@
+{% extends 'layout/base.html' %}
+{% block title %}登录{% endblock %}
+{% block content %}
+<h1>登录{{ g.app.name }}</h1>
+<form action="{{ url_for('user.login') }}" method='post' class="form-horizontal well">
+    {{ form.csrf_token }}
+    {{ form.next(value=request.args.get("next", request.form.get("next", ""))) }}
+    <div class="control-group">
+        {{ form.email.label }}
+        {{ form.email(class='basic-input',maxlength=60,tabindex=1,placeholder='电邮') }}
+        {%- if form.email.errors %}
+            {%- for error in form.email.errors %}
+                <span class="error-tip" style="display: inline;">{{ error }}</span>
+            {%- endfor %}
+        {%- endif %}
+    </div>
+    <div class="item">
+        {{ form.password.label }}
+        {{ form.password(class='basic-input',tabindex=2) }}
+        {%- if form.password.errors %}
+            {%- for error in form.password.errors %}
+                <span class="error-tip" style="display: inline;">{{ error }}</span>
+            {%- endfor %}
+        {%- endif %}
+    </div>
+    <div class="item">
+        <label>&nbsp;</label>
+        <p class="remember">
+            <input type="checkbox" id="remember" name="remember" tabindex="3" value="yes">
+            <label for="remember" class="remember">下次自动登录</label>
+        </p>
+    </div>
+    <div class="item">
+        <label>&nbsp;</label>
+        <input type="submit" value="登录" class="btn btn-primary" tabindex="4">
+    </div>
+</form>
+{% endblock %}

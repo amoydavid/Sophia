@@ -1,0 +1,31 @@
+{% extends 'layout/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% from 'project/_project_todos.html' import head_js,inline_js, todolist_html with context%}
+{% block content %}
+    <div class="row">
+        <div class="span18" id="page-project">
+            {%- if todolist %}
+            <ul class="breadcrumb">
+                <li>项目：<a href="{{ url_for("project_index", project_id=project.id) }}">{{ project.name }}</a><span class="divider">/</span></li>
+                <li><a href="{{ url_for("project_todos", project_id=project.id) }}">所有任务</a><span class="divider">/</span></li>
+                <li>{{ todolist.name }}</li>
+            </ul>
+            {%- endif %}
+            <h2>{{ title }}{% if not todolist %}<a href="{{ url_for('todolist_create', project_id=project.id) }}" class="btn pull-right btn-small">添加任务列表</a>{% endif %}</h2>
+            {{ todolist_html() }}
+        </div>
+        <div class="span6">
+            {% from '_helpers.html' import project_sidebar %}
+            {{ project_sidebar(project) }}
+        </div>
+    </div>
+{% endblock %}
+{% block page_js %}
+{% if is_done %}
+<script>G.todo_status = 'all';G.show_list_title = false;</script>
+{%- endif %}
+{{ inline_js() }}
+{% endblock %}
+{% block head_js %}
+{{ head_js() }}
+{% endblock %}
