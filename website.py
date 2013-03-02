@@ -28,6 +28,12 @@ from flask.ext.login import (LoginManager, AnonymousUser)
 class Anonymous(AnonymousUser):
     name = u"Anonymous"
 
+    def id(self):
+        return 0
+
+    def projects(self):
+        return []
+
 
 login_manager = LoginManager()
 

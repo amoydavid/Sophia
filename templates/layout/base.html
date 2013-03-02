@@ -36,7 +36,7 @@
                 </ul>
                 <ul class="nav pull-right" id="main-menu-right">
                     {% if current_user.is_authenticated() %}
-                        <li><a href=".">{{ current_user.name }}</a></li>
+                        <li><a href="{{ url_for('user.show', user_id=current_user.id) }}">{{ current_user.name }}</a></li>
                         <li><a href="{{ url_for('user.logout') }}">退出</a></li>
                     {% else %}
                         <li><a href="{{ url_for('user.login') }}">登录</a></li>

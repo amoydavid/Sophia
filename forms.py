@@ -19,16 +19,44 @@ class LoginForm(Form):
         rv = Form.validate(self)
         if not rv:
             return False
-
         user = User.query.filter_by(email=self.email.data).first()
         if user is None:
             self.email.errors.append(u'用户不存在')
             return False
-
         if not user.check_password(self.password.data):
             self.password.errors.append(u"密码不正确")
             return False
+        self.user = user
+        return True
 
+
+class RegisterForm(Form):
+    email = TextField(u'邮箱', validators=[Required(u'请填写邮箱')])
+    name = TextField(u'名字', validators=[Required(u'请填写名字')])
+    password = PasswordField(u'密码', validators=[Required(u'请填写密码')])
+
+    def __init__(self, *args, **kwargs):
+        Form.__init__(self, *args, **kwargs)
+        self.user = None
+
+    def validate(self):
+        rv = Form.validate(self)
+        if not rv:
+            return False
+        user = User.query.filter_by(email=self.email.data).first()
+        if user is not None:
+            self.email.errors.append(u'Email已被注册')
+            return False
+        user = User(self.name.data)
+        created_time = int(time.time())
+        user.email = self.email.data
+        user.password = user.hash_password(self.password.data)
+        user.created_at = created_time
+        user.site = 0
+        user.updated_at = created_time
+        user.avatar = 'img/default_avatar.jpg'
+        db.session.add(user)
+        db.session.commit()
         self.user = user
         return True
 

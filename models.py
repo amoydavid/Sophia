@@ -63,8 +63,11 @@ class User(db.Model):
     def get_id(self):
         return self.id
 
+    def hash_password(self, password):
+        return hashlib.md5(password).hexdigest()
+
     def check_password(self, password):
-        if self.password == hashlib.md5(password).hexdigest():
+        if self.password == self.hash_password(password):
             return True
         else:
             return False
