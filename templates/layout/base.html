@@ -8,8 +8,7 @@
     {%- block head %}
     <link rel="stylesheet" href="{{ url_for("static", filename='css/site.css') }}" />
     <link rel="stylesheet" href="{{ url_for("static", filename='css/doc.css') }}" />
-
-    <script src="{{ url_for("static",filename='js/jquery-1.8.3.min.js') }}"></script>
+    <script src="{{ url_for("static",filename='js/jquery-1.9.1.min.js') }}"></script>
     <script src="{{ url_for("static",filename='js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for("static",filename='js/site.js') }}"></script>
     {% block head_js %}{% endblock %}
@@ -17,6 +16,7 @@
     {%- endblock %}
 </head>
 <body>
+{%- if not current_user.is_anonymous() %}
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <div class="container">
@@ -46,6 +46,7 @@
         </div>
     </div>
 </div>
+{%- endif %}
 <div id="content" class="container">
     {% with messages = get_flashed_messages(category_filter=["error"]) %}
         {% if messages %}
@@ -74,11 +75,13 @@
     {% block banner%}{% endblock %}
     {% block content %}{% endblock %}
 </div>
+{%- if not current_user.is_anonymous() %}
 <div id="footer" class="container">
     {% block footer %}
         &copy; Copyright 2013. {% if not current_user.is_authenticated() %}<a href="{{ url_for('user.login') }}">登录</a>{% endif %}
     {% endblock %}
 </div>
+{%- endif %}
 {% if not g.app.debug %}
 <div style="display: none">
     <script type="text/javascript">

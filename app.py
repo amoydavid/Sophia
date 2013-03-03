@@ -24,7 +24,9 @@ def run():
     if user_id:
         projects = current_user.projects()
         #projects = Project.query.join(TeamUser, Project.team_user).filter(TeamUser.user_id == user_id)
-    return render_template('index.html', projects=projects)
+        return render_template('index.html', projects=projects)
+    else:
+        return redirect(url_for('user.login'))
 
 
 @app.route('/project/<int:project_id>/')
