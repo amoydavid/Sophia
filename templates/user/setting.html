@@ -1,0 +1,81 @@
+{% extends 'layout/base.html' %}
+{% block title %}个人信息{% endblock %}
+{% block content %}
+    <style type="text/css">
+        .form-register {
+            max-width: 300px;
+            padding: 19px 29px 29px;
+            margin: 0 auto 20px;
+            background-color: #fff;
+            border: 1px solid #e5e5e5;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+            -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+            box-shadow: 0 1px 2px rgba(0,0,0,.05);
+        }
+        .form-register .form-register-heading,
+        .form-register .checkbox {
+            margin-bottom: 10px;
+        }
+        .text-error{
+            display: block;
+        }
+
+    </style>
+    <form action="{{ url_for('user.setting', user_id=current_user.id) }}" method='post' class="form-register" enctype="multipart/form-data">
+        <h2 class="form-register-heading">{{ current_user.name }}的设置</h2>
+        {{ form.csrf_token }}
+        <div class="control-group">
+            {{ form.email.label }}
+            {{ form.email(class='basic-input',maxlength=60,tabindex=1,placeholder='电邮') }}
+            {%- if form.email.errors %}
+                {%- for error in form.email.errors %}
+                    <span class="text-error">{{ error }}</span>
+                {%- endfor %}
+            {%- endif %}
+        </div>
+        <div class="control-group">
+            {{ form.name.label }}
+            {{ form.name(class='basic-input',tabindex=2) }}
+            {%- if form.name.errors %}
+                {%- for error in form.name.errors %}
+                    <span class="text-error">{{ error }}</span>
+                {%- endfor %}
+            {%- endif %}
+        </div>
+        <div class="control-group">
+            {{ form.current_password.label }}
+            {{ form.current_password(class='basic-input',tabindex=3) }}
+            {%- if form.current_password.errors %}
+                {%- for error in form.current_password.errors %}
+                    <span class="text-error">{{ error }}</span>
+                {%- endfor %}
+            {%- endif %}
+        </div>
+        <div class="control-group">
+            {{ form.new_password.label }}
+            {{ form.new_password(class='basic-input',tabindex=4) }}
+            {%- if form.new_password.errors %}
+                {%- for error in form.new_password.errors %}
+                    <span class="text-error">{{ error }}</span>
+                {%- endfor %}
+            {%- endif %}
+        </div>
+        <div class="control-group">
+            {{ form.avatar.label }}
+            <img src='{{ url_for('uploaded_avatar', filename=form.user.avatar) }}' width="128px" height="128px"/>
+            {{ form.avatar(tabindex=5) }}
+            {%- if form.avatar.errors %}
+                {%- for error in form.avatar.errors %}
+                    <span class="text-error">{{ error }}</span>
+                {%- endfor %}
+            {%- endif %}
+        </div>
+        <div class="control-group">
+            <label>&nbsp;</label>
+            <input type="submit" value="修改" class="btn btn-primary btn-large" tabindex="5">
+        </div>
+    </form>
+{% endblock %}

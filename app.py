@@ -7,7 +7,7 @@ from flask import url_for, render_template, g, send_from_directory, flash, redir
 from flask.ext.login import current_user, login_required
 
 from website import app
-from config import GLOBAL_SETTING, STATIC_FOLDER, DEBUG, UPLOAD_FOLDER, PIC_EXTENSIONS
+from config import GLOBAL_SETTING, STATIC_FOLDER, DEBUG, UPLOAD_FOLDER, PIC_EXTENSIONS, AVATAR_FOLDER
 from models import Topic, Project, Todolist, Todo
 from forms import TopicForm, CommentForm, TodoCommentForm, TodolistForm
 
@@ -207,6 +207,31 @@ def uploaded_file(filename):
             return send_from_directory(thumb_dir, thumb_filename)
 
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+
+@app.route('/avatar/<filename>')
+def uploaded_avatar(filename):
+    if filename == 'default_avatar.jpg':
+        return send_from_directory(STATIC_FOLDER, 'img/default_avatar.jpg')
+    size = request.args.get('size')
+    if size:
+        (base_name, ext_name) = filename.rsplit('.', 1)
+        if ext_name in PIC_EXTENSIONS:
+            ori_file = os.path.join(AVATAR_FOLDER, filename)
+            thumb_filename = "{0:s}_{1:s}.jpg".format(base_name, size)
+            thumb_dir = os.path.join(UPLOAD_FOLDER, "thumb")
+            file_path = os.path.join(UPLOAD_FOLDER, "thumb/{0:s}".format(thumb_filename))
+            if not os.path.exists(file_path):
+                if not os.path.exists(thumb_dir):
+                    os.mkdir(thumb_dir)
+                im = Image.open(ori_file)
+                (x, y) = im.size
+                y_s = int(size)
+                x_s = x * y_s / y
+                out = im.resize((x_s, y_s), Image.ANTIALIAS)
+                out.save(file_path, "JPEG")
+            return send_from_directory(thumb_dir, thumb_filename)
+    return send_from_directory(AVATAR_FOLDER, filename)
 
 
 if __name__ == '__main__':

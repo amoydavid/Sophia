@@ -28,4 +28,6 @@ GLOBAL_SETTING = {'name': u'Sophia', 'debug': DEBUG}
 UPLOAD_FOLDER = os.path.join(_basedir, 'upload')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'rar', 'doc', 'docx', 'zip', '7z'}
 PIC_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+AVATAR_FOLDER = os.path.join(UPLOAD_FOLDER, 'avatar')
+BASE_DIR = _basedir
 del os

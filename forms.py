@@ -1,10 +1,17 @@
 # coding=utf-8
 __author__ = 'liuwei'
 
-from flask.ext.wtf import Form, TextField, Required, PasswordField, HiddenField, TextAreaField, SelectField, SelectMultipleField, widgets
+from flask.ext.wtf import Form, TextField, Required, PasswordField, HiddenField, TextAreaField, FileField
 from models import User, Topic, db, Todolist, Attachment
 import time
+import os
+import uuid
+from config import PIC_EXTENSIONS, AVATAR_FOLDER
 
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in PIC_EXTENSIONS
 
 class LoginForm(Form):
     email = TextField(u'邮箱', validators=[Required(u'请填写邮箱')])
@@ -32,7 +39,7 @@ class LoginForm(Form):
 
 class RegisterForm(Form):
     email = TextField(u'邮箱', validators=[Required(u'请填写邮箱')])
-    name = TextField(u'名字', validators=[Required(u'请填写名字')])
+    name = TextField(u'昵称', validators=[Required(u'请填写昵称')])
     password = PasswordField(u'密码', validators=[Required(u'请填写密码')])
 
     def __init__(self, *args, **kwargs):
@@ -54,10 +61,66 @@ class RegisterForm(Form):
         user.created_at = created_time
         user.site = 0
         user.updated_at = created_time
-        user.avatar = 'img/default_avatar.jpg'
+        user.avatar = 'default_avatar.jpg'
         db.session.add(user)
         db.session.commit()
         self.user = user
+        return True
+
+
+class ProfileForm(Form):
+    email = TextField(u'邮箱', validators=[Required(u'请填写邮箱')])
+    name = TextField(u'昵称', validators=[Required(u'请填写昵称')])
+    current_password = PasswordField(u'现有密码')
+    new_password = PasswordField(u'新密码')
+    avatar = FileField(u'头像')
+
+    def __init__(self, user, *args, **kwargs):
+        Form.__init__(self, *args, **kwargs)
+        self.user = user
+
+    def validate_email(form, field):
+        if field.data:
+            email_user = User.query.filter(User.email == field.data).filter(db.not_(User.id == form.user.id)).first()
+            if email_user:
+                field.errors.append(u'Email被占用')
+            return False
+        return True
+
+    def validate_avatar(form, field):
+        if field.data:
+            ext_name = field.data.filename.rsplit('.', 1)[1]
+            if not allowed_file(field.data.filename):
+                field.errors.append(u'只能上传图片')
+                return False
+            field.data.filename = u"%s.%s" % (uuid.uuid1(), ext_name)
+        return True
+
+    def validate(self):
+        rv = Form.validate(self)
+        if not rv:
+            return False
+        if self.new_password.data:
+            if not self.current_password.data:
+                self.current_password.errors.append(u'请填写现有密码')
+                return False
+            if not self.user.check_password(self.current_password.data):
+                self.current_password.errors.append(u'密码填错了亲')
+                return False
+            self.user.password = self.user.hash_password(self.new_password.data)
+        self.user.email = self.email.data
+        self.user.name = self.name.data
+        self.user.updated_at = int(time.time())
+        old_file = None
+        if self.avatar.data:
+            old_file = self.user.avatar
+            self.user.avatar = u"%s" % self.avatar.data.filename
+        db.session.add(self.user)
+        db.session.commit()
+        if old_file and old_file != 'default_avatar.jpg':
+            old_file = os.path.join(AVATAR_FOLDER, old_file)
+            if os.path.exists(old_file):
+                os.remove(old_file)
         return True
 
 

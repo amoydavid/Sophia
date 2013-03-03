@@ -13,7 +13,7 @@
             <div class="topic clearfix">
                 <div class="message">
                     <div class="message-subject"><h2 title="{{ topic.subject }}">{{ topic.subject }}</h2></div>
-                    <a class="avatar-wrap"><img class="avatar" src="{{ url_for('static', filename=topic.user.avatar) }}" width="50" height="50"></a>
+                    <a class="avatar-wrap"><img class="avatar" src="{{ url_for('uploaded_avatar', filename=topic.user.avatar) }}" width="50" height="50"></a>
                     <div class="message-main">
                         <div class="info">
                             <a class="author" href="{{ url_for('user.show', user_id=topic.user_id) }}" >{{ topic.user.name }}</a>

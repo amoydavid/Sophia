@@ -43,6 +43,7 @@ class User(db.Model):
     name = db.Column(db.String(256))
     site = db.Column(db.Integer)
     created_at = db.Column(db.Integer)
+    updated_at = db.Column(db.Integer)
     avatar = db.Column(db.String(256))
 
     def __init__(self, name):
