@@ -32,7 +32,9 @@ class Project(db.Model):
     topic_count = db.Column(db.Integer)
     todo_count = db.Column(db.Integer)
     file_count = db.Column(db.Integer)
+    status = db.Column(db.Integer)
     team = db.relationship("Team")
+    created_at = db.Column(db.Integer)
 
 
 class User(db.Model):
@@ -77,7 +79,7 @@ class User(db.Model):
         team_ids = []
         for team in self.teams:
             team_ids.append(team.id)
-        return Project.query.filter(Project.team_id.in_(team_ids)).all()
+        return Project.query.filter(Project.team_id.in_(team_ids)).filter(Project.status == 0).all()
 
     def __repr__(self):
         obj = {

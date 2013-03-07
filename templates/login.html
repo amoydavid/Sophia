@@ -36,6 +36,7 @@
     <form action="{{ url_for('user.login') }}" method='post' class="form-signin">
         <h2 class="form-signin-heading">登录</h2>
         {{ form.csrf_token }}
+        {{ form.next() }}
         {%- if form.email.errors %}
             {%- for error in form.email.errors %}
                 <span class="text-error" style="display: inline;">{{ error }}</span>

@@ -1,0 +1,45 @@
+{% extends 'layout/base.html' %}
+{% block title %}新建项目{% endblock %}
+{% block content %}
+    <div class="row">
+        <form id="form" action="{% if form.project %}{{ url_for('project_setting', project_id=form.project.id) }}{% else %}{{ url_for('project_create') }}{% endif %}" method='post'>
+            <fieldset>
+                <legend>{% if not form.project %}新建项目{% else %}修改 {{ form.project.name }}{% endif %}</legend>
+                {{ form.csrf_token }}
+                <div class="controls-row">
+                    {{ form.name(class='span10',maxlength=140,tabindex=1,placeholder='项目名称') }}
+                    {%- if form.name.errors %}
+                        <span class="help-inline">
+            {%- for error in form.name.errors %}
+                <span class="text-error">{{ error }}</span>
+            {%- endfor %}
+                </span>
+                    {%- endif %}
+                </div>
+                <div class="controls-row">
+                    {{ form.team_id() }}
+                </div>
+                <div class="controls-row">
+                    {{ form.subject(class='span10',col=50,rows=15,tabindex=2,placeholder='说明') }}
+                </div>
+                {% if form.project %}
+                <div class="controls-row">
+                    <label class="checkbox">
+                        <input type="checkbox" id="delete" name="delete" value="yes"> 删除本项目
+                    </label>
+                </div>
+                {% endif %}
+                <input type="submit" value="保存" class="btn btn-primary" tabindex="4">
+            </fieldset>
+        </form>
+        {% if form.project %}
+        <script>
+            $('#form').on('submit', function(){
+                if($('#delete').prop('checked')){
+                    return window.confirm('确认要删除吗？')
+                }
+            });
+        </script>
+        {% endif %}
+    </div>
+{% endblock %}

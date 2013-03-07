@@ -29,9 +29,20 @@ class Anonymous(AnonymousUser):
     name = u"Anonymous"
     id = 0
 
+    def is_authenticated(self):
+        return False
+
+    def is_active(self):
+        return False
+
+    def is_anonymous(self):
+        return True
+
+    def get_id(self):
+        return 0
+
 
 login_manager = LoginManager()
-
 login_manager.anonymous_user = Anonymous
 login_manager.login_view = "user.login"
 login_manager.login_message = u"亲，要先登录哦"

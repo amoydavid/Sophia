@@ -8,8 +8,8 @@ from flask.ext.login import current_user, login_required
 
 from website import app
 from config import GLOBAL_SETTING, STATIC_FOLDER, DEBUG, UPLOAD_FOLDER, PIC_EXTENSIONS, AVATAR_FOLDER
-from models import Topic, Project, Todolist, Todo
-from forms import TopicForm, CommentForm, TodoCommentForm, TodolistForm
+from models import Topic, Project, Todolist, Todo, Team, db
+from forms import TopicForm, CommentForm, TodoCommentForm, TodolistForm, ProjectForm
 
 
 @app.before_request
@@ -30,6 +30,7 @@ def run():
 
 
 @app.route('/project/<int:project_id>/')
+@login_required
 def project_index(project_id):
     topics = Topic.query.filter_by(project_id=project_id, is_comment=0).order_by('updated_at desc')[0:3]
     project = Project.query.get(project_id)
@@ -40,9 +41,36 @@ def project_index(project_id):
                            done_lists=done_lists, todolists_json=str(undone_lists), team_users=team_users)
 
 
+@app.route('/project/create/', methods=['GET', 'POST'])
 @login_required
+def project_create():
+    form = ProjectForm(user=current_user)
+    form.team_id.choices = [(g.id, g.name) for g in current_user.teams]
+    if form.validate_on_submit():
+        return redirect(url_for('project_index', project_id=form.project.id))
+    return render_template('project/form.html', form=form)
+
+
+@app.route('/project/<int:project_id>/setting/', methods=['GET', 'POST'])
+@login_required
+def project_setting(project_id):
+    project = Project.query.get(project_id)
+    form = ProjectForm(user=current_user, team=project.team, project=project, team_id=project.team.id,
+                       name=project.name, subject=project.subject)
+    form.team_id.choices = [(g.id, g.name) for g in current_user.teams]
+    if form.validate_on_submit():
+        if request.form.get('delete'):
+            project.status = 1
+            db.session.add(project)
+            db.session.commit()
+            return redirect(url_for('run'))
+        return redirect(url_for('project_index', project_id=form.project.id))
+    return render_template('project/form.html', form=form)
+
+
 @app.route('/project/<int:project_id>/todos/<string:status>/', defaults={'page': 1})
 @app.route('/project/<int:project_id>/todos/<string:status>/page/<int:page>/')
+@login_required
 def project_todo_status(project_id, status, page):
     project = Project.query.get(project_id)
     items_per_page = 40
@@ -64,8 +92,8 @@ def project_todos(project_id):
                            todolists_json=str(todolists), team_users=team_users, title=title, done_lists=done_lists)
 
 
-@login_required
 @app.route('/project/<int:project_id>/topics/create/', methods=['GET', 'POST'])
+@login_required
 def topic_create(project_id):
     project = Project.query.get(project_id)
     form = TopicForm(current_user, project, request.form.getlist('attachment'))
@@ -131,9 +159,9 @@ def todolist_show(list_id):
                            todolist=todolist)
 
 
-@login_required
 @app.route('/todo/<int:todo_id>/', defaults={'page': 1}, methods=['GET', 'POST'])
 @app.route('/todo/<int:todo_id>/page/<int:page>/', methods=['GET', 'POST'])
+@login_required
 def todo_show(todo_id, page):
     todo = Todo.query.get(todo_id)
     form = TodoCommentForm(current_user, todo, request.form.getlist('attachment'))
@@ -154,8 +182,8 @@ def todo_show(todo_id, page):
     return render_template('project/todo.html', todo=todo, form=form, pagination=pagination, team_users=team_users)
 
 
-@login_required
 @app.route('/project/<int:project_id>/todos/create_list/', methods=['GET', 'POST'])
+@login_required
 def todolist_create(project_id):
     project = Project.query.get(project_id)
     form = TodolistForm(current_user, project_id)

@@ -1,8 +1,8 @@
 # coding=utf-8
 __author__ = 'liuwei'
 
-from flask.ext.wtf import Form, TextField, Required, PasswordField, HiddenField, TextAreaField, FileField
-from models import User, Topic, db, Todolist, Attachment
+from flask.ext.wtf import Form, TextField, Required, PasswordField, HiddenField, TextAreaField, FileField, SelectField
+from models import User, Topic, db, Todolist, Attachment, Team, Project
 import time
 import os
 import uuid
@@ -36,6 +36,43 @@ class LoginForm(Form):
         self.user = user
         return True
 
+
+class ProjectForm(Form):
+    name = TextField(u'名称', validators=[Required(u'请填写项目名')])
+    subject = TextAreaField(u'说明')
+    team_id = SelectField(u'团队', coerce=int)
+
+    def __init__(self, user=None, team=None, project=None, *args, **kwargs):
+        Form.__init__(self, *args, **kwargs)
+        self.user = user
+        self._team = team
+        self.project = project
+
+    def validate(self):
+        rv = Form.validate(self)
+        if not rv:
+            return False
+        if not self.project:
+            self.project = Project()
+        if not self.user:
+            self.name.errors.append(u'没有指定用户')
+            return False
+        if not self.team_id.data and self._team:
+            team_id = self._team.id
+        else:
+            team_id = self.team_id.data
+        self.project.name = self.name.data
+        self.project.subject = self.subject.data
+        self.project.creator_id = self.user.id
+        self.project.created_at = int(time.time())
+        self.project.team_id = team_id
+        self.project.todo_count = 0
+        self.project.file_count = 0
+        self.project.topic_count = 0
+        self.project.status = 0
+        db.session.add(self.project)
+        db.session.commit()
+        return True
 
 class RegisterForm(Form):
     email = TextField(u'邮箱', validators=[Required(u'请填写邮箱')])

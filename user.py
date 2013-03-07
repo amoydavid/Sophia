@@ -16,7 +16,7 @@ user = Blueprint('user', __name__,
 
 @user.route('/login/', methods=["GET", "POST"])
 def login():
-    form = LoginForm()
+    form = LoginForm(next=request.args.get('next'))
     if form.validate_on_submit():
         flash(u'欢迎回来，%s' % form.user.name)
         remember = request.form.get("remember", "no") == "yes"
@@ -40,14 +40,14 @@ def show_index():
     return "user show" + pw_hash
 
 
-@login_required
 @user.route('/<int:user_id>/')
+@login_required
 def show(user_id):
     return render_template('user/show.html')
 
 
-@login_required
 @user.route('/<int:user_id>/setting/', methods=['GET', 'POST'])
+@login_required
 def setting(user_id):
     user = User.query.get(user_id)
     form = ProfileForm(user, email=user.email, name=user.name)
