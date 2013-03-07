@@ -56,6 +56,7 @@ CREATE TABLE `project` (
   `file_count` int(11) NOT NULL DEFAULT '0',
   `text_count` int(11) NOT NULL DEFAULT '0',
   `created_at` int(11) DEFAULT NULL,
+  `status` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
