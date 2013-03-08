@@ -1,5 +1,5 @@
 {% extends 'layout/base.html' %}
-{% block title %}新建项目{% endblock %}
+{% block title %}{% if not form.project %}新建项目{% else %}修改 {{ form.project.name }}{% endif %}{% endblock %}
 {% block content %}
     <div class="row">
         <form id="form" action="{% if form.project %}{{ url_for('project_setting', project_id=form.project.id) }}{% else %}{{ url_for('project_create') }}{% endif %}" method='post'>

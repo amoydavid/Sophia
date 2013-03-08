@@ -9,7 +9,7 @@ from flask.ext.login import current_user, login_required
 from website import app
 from config import GLOBAL_SETTING, STATIC_FOLDER, DEBUG, UPLOAD_FOLDER, PIC_EXTENSIONS, AVATAR_FOLDER
 from models import Topic, Project, Todolist, Todo, Team, db
-from forms import TopicForm, CommentForm, TodoCommentForm, TodolistForm, ProjectForm
+from forms import TopicForm, CommentForm, TodoCommentForm, TodolistForm, ProjectForm, TeamForm
 
 
 @app.before_request
@@ -20,13 +20,50 @@ def load_app():
 @app.route('/')
 def run():
     user_id = current_user.id
-    projects = []
     if user_id:
+        if not current_user.teams:
+            return redirect(url_for('team_index'))
         projects = current_user.projects()
-        #projects = Project.query.join(TeamUser, Project.team_user).filter(TeamUser.user_id == user_id)
         return render_template('index.html', projects=projects)
     else:
         return redirect(url_for('user.login'))
+
+
+@app.route('/team/')
+@login_required
+def team_index():
+    teams = current_user.teams
+    return render_template('team/list.html', teams=teams)
+
+
+@app.route('/team/create/', methods=['GET', 'POST'])
+@login_required
+def team_create():
+    form = TeamForm(user=current_user)
+    if form.validate_on_submit():
+        return redirect(url_for('team_show', team_id=form.team.id))
+    return render_template('team/form.html', form=form)
+
+
+@app.route('/team/<int:team_id>/setting/', methods=['GET', 'POST'])
+@login_required
+def team_setting(team_id):
+    team = Team.query.get(team_id)
+    form = TeamForm(user=current_user, team_id=team.id, name=team.name)
+    if form.validate_on_submit():
+        if form.team.status == 0:
+            return redirect(url_for('team_show', team_id=form.team.id))
+        else:
+            flash(u'团队已删除')
+            return redirect(url_for('team_index'))
+    return render_template('team/form.html', form=form, team=team)
+
+
+@app.route('/team/<int:team_id>/')
+@login_required
+def team_show(team_id):
+    team = Team.query.get(team_id)
+    return render_template('team/show.html', team=team)
 
 
 @app.route('/project/<int:project_id>/')
@@ -44,7 +81,7 @@ def project_index(project_id):
 @app.route('/project/create/', methods=['GET', 'POST'])
 @login_required
 def project_create():
-    form = ProjectForm(user=current_user)
+    form = ProjectForm(user=current_user, team_id=request.args.get('team_id'))
     form.team_id.choices = [(g.id, g.name) for g in current_user.teams]
     if form.validate_on_submit():
         return redirect(url_for('project_index', project_id=form.project.id))
@@ -143,7 +180,6 @@ def topic_detail(topic_id, page):
 @app.route('/project/<int:project_id>/lists/page/<int:page>/')
 def project_todolists(project_id, page):
     project = Project.query.get(project_id)
-
     return "todolist"
 
 

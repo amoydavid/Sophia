@@ -1,8 +1,9 @@
 # coding=utf-8
 __author__ = 'liuwei'
 
-from flask.ext.wtf import Form, TextField, Required, PasswordField, HiddenField, TextAreaField, FileField, SelectField
-from models import User, Topic, db, Todolist, Attachment, Team, Project
+from flask.ext.wtf import Form, TextField, Required, PasswordField, HiddenField, TextAreaField, \
+    FileField, SelectField, BooleanField
+from models import User, Topic, db, Todolist, Attachment, Team, Project, TeamUser
 import time
 import os
 import uuid
@@ -12,6 +13,7 @@ from config import PIC_EXTENSIONS, AVATAR_FOLDER
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in PIC_EXTENSIONS
+
 
 class LoginForm(Form):
     email = TextField(u'邮箱', validators=[Required(u'请填写邮箱')])
@@ -73,6 +75,7 @@ class ProjectForm(Form):
         db.session.add(self.project)
         db.session.commit()
         return True
+
 
 class RegisterForm(Form):
     email = TextField(u'邮箱', validators=[Required(u'请填写邮箱')])
@@ -312,4 +315,49 @@ class TodolistForm(Form):
         db.session.add(todolist)
         db.session.commit()
         self.todolist = todolist
+        return True
+
+
+class TeamForm(Form):
+    name = TextField(u'团队名称', validators=[Required(u'请填写团队名称')])
+    status = BooleanField(u'删除项目')
+    team_id = HiddenField()
+
+    def __init__(self, user, *args, **kwargs):
+        Form.__init__(self, *args, **kwargs)
+        self.admin_user = user
+
+    def validate(self):
+        rv = Form.validate(self)
+        if not rv:
+            return False
+        current_time = int(time.time())
+        if self.team_id.data:
+            team = Team.query.get(self.team_id.data)
+        else:
+            team = Team()
+        team.admin_id = self.admin_user.id
+        team.name = self.name.data
+        team.created_at = current_time
+        if self.status.data:
+            team.status = 1
+        else:
+            team.status = 0
+        db.session.add(team)
+        db.session.commit()
+        if not self.team_id.data:
+            team_user = TeamUser()
+            team_user.team_id = team.id
+            team_user.user_id = self.admin_user.id
+            db.session.add(team_user)
+            db.session.commit()
+        if self.status.data:
+            team_user = TeamUser.query.filter(db.and_(TeamUser.team_id == team.id and
+                                                      TeamUser.user_id == self.admin_user.id)).first()
+            if team_user:
+                db.session.delete(team_user)
+                db.session.commit()
+            db.session.query(Project).filter(Project.team_id == team.id).update({Project.status: 1})
+            db.session.commit()
+        self.team = team
         return True

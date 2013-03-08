@@ -1,0 +1,42 @@
+{% extends 'layout/base.html' %}
+{% block title %}{% if not team %}新建团队{% else %}修改 {{ team.name }}{% endif %}{% endblock %}
+{% block content %}
+    <div class="row">
+        <form id="form" action="{% if team %}{{ url_for('team_setting', team_id=team.id) }}{% else %}{{ url_for('team_create') }}{% endif %}" method='post'>
+            <fieldset>
+                <legend>{% if not team %}新建团队{% else %}修改 {{ team.name }}{% endif %}</legend>
+                {{ form.csrf_token }}
+                <div class="controls-row">
+                    {{ form.name(class='span10',maxlength=140,tabindex=1,placeholder='团队名称') }}
+                    {%- if form.name.errors %}
+                        <span class="help-inline">
+            {%- for error in form.name.errors %}
+                <span class="text-error">{{ error }}</span>
+            {%- endfor %}
+                </span>
+                    {%- endif %}
+                </div>
+                <div class="controls-row">
+                    {{ form.team_id() }}
+                </div>
+                {% if team %}
+                    <div class="controls-row">
+                        <label class="checkbox">
+                            {{ form.status(value=1) }} 删除本团队
+                        </label>
+                    </div>
+                {% endif %}
+                <input type="submit" value="保存" class="btn btn-primary" tabindex="4">
+            </fieldset>
+        </form>
+        {% if team %}
+            <script>
+                $('#form').on('submit', function(){
+                    if($('#status').prop('checked')){
+                        return window.confirm('确认要删除吗？')
+                    }
+                });
+            </script>
+        {% endif %}
+    </div>
+{% endblock %}

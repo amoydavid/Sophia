@@ -2,18 +2,18 @@
 {% block all_title %}{{ g.app.name }}{% endblock %}
 {% block content %}
 <div class="row">
-    <div class="span12"><a href="{{ url_for('project_create') }}" class="btn btn-primary">创建新项目</a></div></div>
-    <div class="row">
-
-        {% for project in projects %}
-        <div class="span6">
-        <a href="{{ url_for("project_index", project_id = project.id) }}">
-                <h2>{{ project.name }} <i class="icon-arrow-right"></i></h2>
-                <p>{{ project.subject }}</p>
-        </a>
-        </div>
-        {% endfor %}
+    <div class="span12"><a href="{{ url_for('project_create') }}" class="btn btn-primary">创建新项目</a></div>
+</div>
+<div class="row">
+    {% for project in projects %}
+    <div class="span6">
+    <a href="{{ url_for("project_index", project_id = project.id) }}">
+            <h2>{{ project.name }} <i class="icon-arrow-right"></i></h2>
+            <p>{{ project.subject }}</p>
+    </a>
     </div>
+    {% endfor %}
+</div>
 
 
 {% endblock %}

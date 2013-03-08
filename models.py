@@ -90,10 +90,19 @@ class User(db.Model):
         return json.dumps(obj)
 
 
-TeamUser = db.Table('team_user',
-                    db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
-                    db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
-)
+TeamUserTable = db.Table('team_user',
+                         db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
+                         db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+                         )
+
+
+class TeamUser(db.Model):
+    __tablename__ = 'team_user'
+    __table_args__ = {'extend_existing': True}
+    id = db.Column(db.Integer, primary_key=True)
+    team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
 
 
 class Team(db.Model):
@@ -101,7 +110,13 @@ class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    users = db.relationship('User', secondary=TeamUser, backref=db.backref('teams', lazy='dynamic'))
+    created_at = db.Column(db.Integer)
+    users = db.relationship('User', secondary=TeamUserTable, backref=db.backref('teams', lazy='dynamic'))
+    status = db.Column(db.Integer)
+
+    @property
+    def projects(self):
+        return Project.query.filter(Project.team_id == self.id).filter(Project.status == 0).all()
 
 
 class Topic(db.Model):
@@ -185,7 +200,7 @@ class Todo(db.Model):
 
     def _get_attachments(self):
         return db.object_session(self).query(Attachment).filter(Attachment.root_id == self.id,
-                                                                                  Attachment.root_class == 'todo').all()
+                                                                Attachment.root_class == 'todo').all()
 
     attachments = property(_get_attachments)
 

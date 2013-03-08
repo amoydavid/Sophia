@@ -72,6 +72,7 @@ CREATE TABLE `team` (
   `name` varchar(256) DEFAULT NULL,
   `admin_id` int(11) DEFAULT '0',
   `created_at` int(11) DEFAULT NULL,
+  `status` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
