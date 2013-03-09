@@ -75,6 +75,15 @@ class User(db.Model):
         else:
             return False
 
+    @property
+    def teams(self):
+        team_ids = []
+        for team_user in TeamUser.query.filter(TeamUser.user_id == self.id).all():
+            team_ids.append(team_user.team_id)
+        if not team_ids:
+            return []
+        return Team.query.filter(Team.id.in_(team_ids)).filter(Team.status == 0).all()
+
     def projects(self):
         team_ids = []
         for team in self.teams:
@@ -111,7 +120,7 @@ class Team(db.Model):
     name = db.Column(db.String(64))
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     created_at = db.Column(db.Integer)
-    users = db.relationship('User', secondary=TeamUserTable, backref=db.backref('teams', lazy='dynamic'))
+    users = db.relationship('User', secondary=TeamUserTable)
     status = db.Column(db.Integer)
 
     @property

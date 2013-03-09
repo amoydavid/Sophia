@@ -24,6 +24,8 @@ def run():
         if not current_user.teams:
             return redirect(url_for('team_index'))
         projects = current_user.projects()
+        if not projects:
+            return redirect(url_for('project_create'))
         return render_template('index.html', projects=projects)
     else:
         return redirect(url_for('user.login'))
