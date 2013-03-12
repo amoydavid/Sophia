@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.1.44)
 # Database: basecamp
-# Generation Time: 2013-03-02 02:56:51 +0000
+# Generation Time: 2013-03-12 15:26:29 +0000
 # ************************************************************
 
 
@@ -35,6 +35,28 @@ CREATE TABLE `attachment` (
   `root_id` int(11) DEFAULT '0',
   `user_id` int(11) DEFAULT NULL,
   `created_at` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+# Dump of table feed
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `feed`;
+
+CREATE TABLE `feed` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) DEFAULT NULL,
+  `project_id` int(11) DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `operation` varchar(256) DEFAULT NULL,
+  `todo_id` int(11) DEFAULT NULL,
+  `created_at` int(11) DEFAULT NULL,
+  `old_value` varchar(256) DEFAULT NULL,
+  `new_value` varchar(256) DEFAULT NULL,
+  `old_user_id` int(11) DEFAULT NULL,
+  `new_user_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -107,6 +129,7 @@ CREATE TABLE `todo` (
   `created_at` int(11) NOT NULL,
   `finished_at` int(11) DEFAULT NULL,
   `updated_at` int(11) NOT NULL,
+  `updated_user_id` int(11) DEFAULT '0',
   `due_date` date DEFAULT NULL,
   `assignee_uid` int(11) DEFAULT '0',
   `finish_uid` int(11) DEFAULT '0',

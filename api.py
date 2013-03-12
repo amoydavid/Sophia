@@ -54,6 +54,7 @@ def todolist_new_todo(list_id):
     todo.created_at = current_time
     todo.updated_at = current_time
     todo.assignee_uid = request.json.get('assignee_uid', 0)
+    todo.updated_user_id = current_user.id
     db.session.add(todo)
     db.session.commit()
     todo_obj = json.loads(str(todo))
@@ -78,6 +79,7 @@ def todo_put(todo_id):
             todo.finish_uid = current_user.id
         if data['due_date']:
             todo.due_date = data['due_date']
+        todo.updated_user_id = current_user.id
         db.session.commit()
     todo_obj = json.loads(str(todo))
     todo_obj['code'] = 0

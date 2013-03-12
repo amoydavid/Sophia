@@ -2,6 +2,7 @@
     <ul class="nav nav-list affix-top">
         <li class="nav-header">菜单</li>
         <li><a href="{{ url_for("project_index", project_id = project.id) }}">{{ project.name }}</a></li>
+        <li><a href="{{ url_for("project_feed", project_id=project.id) }}">回顾</a></li>
         <li><a href="{{ url_for("topic_list", project_id=project.id) }}">讨论</a></li>
         <li><a href="{{ url_for("project_todos", project_id=project.id) }}">任务</a></li>
         <li><a href=".">文件</a></li>
@@ -25,4 +26,32 @@
         {%- endfor %}
         </ul>
     </div>
+{% endmacro %}
+
+{% macro render_feed(feed) %}
+{%- if feed.operation == 'create'  %}
+{{ feed.actor.name }} 创建了 <a href="{{ url_for('todo_show', todo_id=feed.todo_id) }}">{{ feed.todo.subject }}</a>
+{%- elif feed.operation == 'done' %}
+{{ feed.actor.name }} 将 <a href="{{ url_for('todo_show', todo_id=feed.todo_id) }}">{{ feed.todo.subject }}</a> 标记为完成
+{%- elif feed.operation == 'reopen' %}
+{{ feed.actor.name }} 重新打开了 <a href="{{ url_for('todo_show', todo_id=feed.todo_id) }}">{{ feed.todo.subject }}</a>
+{%- elif feed.operation == 'due_date' %}
+{{ feed.actor.name }} 将 <a href="{{ url_for('todo_show', todo_id=feed.todo_id) }}">{{ feed.todo.subject }}</a> 的完成时间由 <span class="label">{{ feed.old_value }}</span> 改为了 <span class="label">{{ feed.new_value }}</span>
+{%- elif feed.operation == 'assign' %}
+    {%- if feed.new_user_id  %}
+{{ feed.actor.name }} 将 <a href="{{ url_for('todo_show', todo_id=feed.todo_id) }}">{{ feed.todo.subject }}</a>
+        {%- if feed.old_user_id  %}
+            由 <span class="label">{{ feed.old_user.name }}</span>
+        {%- endif %}
+        指派给 <span class="label">{{ feed.new_user.name }}</span>
+    {%- else %}
+{{ feed.actor.name }} 将 <a href="{{ url_for('todo_show', todo_id=feed.todo_id) }}">{{ feed.todo.subject }}</a>
+        {%- if feed.old_user_id  %}
+            由 <span class="label">{{ feed.old_user.name }}</span>
+        {%- endif %}
+        设为暂时不指派给任何人。
+    {%- endif %}
+{%- else  %}
+<a href="{{ url_for('todo_show', todo_id=feed.todo_id) }}">{{ feed.todo.subject }}</a>
+{%- endif  %}
 {% endmacro %}

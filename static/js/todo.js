@@ -92,7 +92,7 @@ var TodoView = Backbone.View.extend({
         });
         if(this.model.get('due_date')){
             var model_due_date = this.model.get('due_date');
-            $due_date = this.$el.find('.due-date');
+            var $due_date = this.$el.find('.due-date');
             $due_date.text(model_due_date);
             var today = new Date();
             var due_date = new Date(model_due_date);
@@ -132,6 +132,7 @@ var TodoView = Backbone.View.extend({
     },
     setDueDate: function(date){
         this.$el.find('.due-date').datepicker('hide').off('changeDate');
+        this.$el.find('.due-date').data('date', date);
         this.model.setDueDate(date);
     },
     assignUser:function(){

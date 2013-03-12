@@ -102,7 +102,7 @@ class User(db.Model):
 TeamUserTable = db.Table('team_user',
                          db.Column('team_id', db.Integer, db.ForeignKey('team.id')),
                          db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-                         )
+)
 
 
 class TeamUser(db.Model):
@@ -111,7 +111,6 @@ class TeamUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
 
 
 class Team(db.Model):
@@ -200,6 +199,7 @@ class Todo(db.Model):
     finish_uid = db.Column(db.Integer, default=0)
     assignee_uid = db.Column(db.Integer, default=0)
     reply_count = db.Column(db.Integer, default=0)
+    updated_user_id = db.Column(db.Integer, default=0)
     creator = db.relationship('User', uselist=False, foreign_keys=creator_id, primaryjoin=creator_id == User.id)
     finish_user = db.relationship('User', uselist=False, foreign_keys=finish_uid, primaryjoin=finish_uid == User.id)
     assignee = db.relationship('User', uselist=False, foreign_keys=assignee_uid, primaryjoin=assignee_uid == User.id)
@@ -252,7 +252,82 @@ class Todo(db.Model):
         return json.dumps(obj)
 
 
+
+class Feed(db.Model):
+    __tablename__ = 'feed'
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.Integer)
+    team_id = db.Column(db.Integer)
+    project_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    todo_id = db.Column(db.Integer, db.ForeignKey('todo.id'))
+    operation = db.Column(db.String(256))
+    old_value = db.Column(db.String(256))
+    new_value = db.Column(db.String(256))
+    old_user_id = db.Column(db.Integer)
+    new_user_id = db.Column(db.Integer)
+    todo = db.relationship("Todo", uselist=False)
+    actor = db.relationship('User', uselist=False, foreign_keys=user_id, primaryjoin=user_id == User.id)
+    old_user = db.relationship('User', uselist=False, foreign_keys=old_user_id, primaryjoin=old_user_id == User.id)
+    new_user = db.relationship('User', uselist=False, foreign_keys=new_user_id, primaryjoin=new_user_id == User.id)
+
+
+
 from sqlalchemy import event
+
+
+def feed_create_todo(connection, todo):
+    team_id = connection.scalar(
+        "select team_id from project where id = %d"
+        % todo.project_id)
+    connection.execute('insert into feed (team_id,project_id,user_id,todo_id,operation,created_at) '
+                       'values(%i, %i, %i, %i, "create", %i)' %
+                       (int(team_id), int(todo.project_id), int(todo.creator_id), int(todo.id),
+                        int(time.time())))
+
+
+def feed_set_todo_done(connection, todo):
+    team_id = connection.scalar(
+        "select team_id from project where id = %d"
+        % todo.project_id)
+    connection.execute('insert into feed (team_id,project_id,user_id,todo_id,operation,created_at) '
+                       'values(%i, %i, %i, %i, "done", %i)' %
+                       (int(team_id), int(todo.project_id), int(todo.finish_uid), int(todo.id),
+                        int(time.time())))
+
+
+def feed_set_todo_reopen(connection, todo):
+    team_id = connection.scalar(
+        "select team_id from project where id = %d"
+        % todo.project_id)
+    connection.execute('insert into feed (team_id,project_id,user_id,todo_id,operation,created_at) '
+                       'values(%i, %i, %i, %i, "reopen", %i)' %
+                       (int(team_id), int(todo.project_id), int(todo.updated_user_id), int(todo.id),
+                        int(time.time())))
+
+
+def feed_assign_todo(connection, todo, old_user_id):
+    team_id = connection.scalar(
+        "select team_id from project where id = %d"
+        % todo.project_id)
+    connection.execute('insert into feed '
+                       '(team_id,project_id,user_id,todo_id,operation,created_at,old_user_id,new_user_id) '
+                       'values'
+                       '(%i, %i, %i, %i, "assign", %i, %i, %i)' %
+                       (int(team_id), int(todo.project_id), int(todo.updated_user_id), int(todo.id),
+                        int(time.time()), int(old_user_id), int(todo.assignee_uid)))
+
+
+def feed_due_todo(connection, todo, old_due_date):
+    team_id = connection.scalar(
+        "select team_id from project where id = %d"
+        % todo.project_id)
+    connection.execute('insert into feed '
+                       '(team_id,project_id,user_id,todo_id,operation,created_at,old_value,new_value) '
+                       'values'
+                       '(%i, %i, %i, %i, "due_date", %i, "%s", "%s")' %
+                       (int(team_id), int(todo.project_id), int(todo.updated_user_id), int(todo.id),
+                        int(time.time()), old_due_date, todo.due_date))
 
 
 def after_insert_topic(mapper, connection, target):
@@ -267,12 +342,19 @@ def after_insert_todo(mapper, connection, target):
     connection.execute(
         'update todo_list set todo_count = todo_count+1,has_finished=0 where id = %i' % int(target.list_id))
     connection.execute('update project set todo_count = todo_count+1 where id = %i' % int(target.project_id))
+    feed_create_todo(connection, target)
 
 
 def before_update_todo(mapper, connection, target):
-    target._old_done = connection.scalar(
-        "select done from todo where id = %d"
+    result = connection.execute(
+        "select done,assignee_uid,due_date from todo where id = %d"
         % target.id)
+    for row in result:
+        target._old_done = row['done']
+        target._old_assignee_uid = row['assignee_uid']
+        target._old_due_date = row['due_date']
+        break
+
     if target._old_done == 0 and target.done == 1:
         target.finished_at = int(time.time())
         #connection.execute('update todo set finished_at = %d where id = %i' % (int(time.time()), int(target.id)))
@@ -290,9 +372,15 @@ def after_update_todo(mapper, connection, target):
                 connection.execute('update todo_list set has_finished = 1 where id = %i' % list_id)
             break
         result.close()
+        feed_set_todo_done(connection, target)
     elif target._old_done == 1 and target.done == 0:
         connection.execute(
             'update todo_list set finish_count = finish_count-1,has_finished=0 where id = %i' % int(target.list_id))
+        feed_set_todo_reopen(connection, target)
+    if target.assignee_uid != target._old_assignee_uid:
+        feed_assign_todo(connection, target, target._old_assignee_uid)
+    if target.due_date != target._old_due_date:
+        feed_due_todo(connection, target, target._old_due_date)
 
 
 event.listen(Topic, 'after_insert', after_insert_topic)

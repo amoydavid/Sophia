@@ -8,7 +8,7 @@ from flask.ext.login import current_user, login_required
 
 from website import app
 from config import GLOBAL_SETTING, STATIC_FOLDER, DEBUG, UPLOAD_FOLDER, PIC_EXTENSIONS, AVATAR_FOLDER
-from models import Topic, Project, Todolist, Todo, Team, db
+from models import Topic, Project, Todolist, Todo, Team, db, Feed
 from forms import TopicForm, CommentForm, TodoCommentForm, TodolistForm, ProjectForm, TeamForm
 
 
@@ -88,6 +88,17 @@ def project_create():
     if form.validate_on_submit():
         return redirect(url_for('project_index', project_id=form.project.id))
     return render_template('project/form.html', form=form)
+
+
+@app.route('/project/<int:project_id>/progress/', defaults={'page': 1})
+@app.route('/project/<int:project_id>/progress/page/<int:page>/')
+@login_required
+def project_feed(project_id, page):
+    project = Project.query.get(project_id)
+    items_per_page = 40
+    feeds = Feed.query.filter_by(project_id=project_id).order_by('created_at desc') \
+        .paginate(page, items_per_page)
+    return render_template('project/progress.html', project=project, feeds=feeds)
 
 
 @app.route('/project/<int:project_id>/setting/', methods=['GET', 'POST'])
