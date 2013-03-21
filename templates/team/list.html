@@ -1,11 +1,12 @@
 {% extends 'layout/base.html' %}
 {% block title %}团队{% endblock %}
 {% block content %}
-<h2>我的团队</h2>
+
 <div class="span24">
-<a class="btn btn-primary" href="{{ url_for('team_create') }}">新建团队</a>
+<a class="btn btn-primary" href="{{ url_for('team_create') }}">新建团队</a> <a class="btn" href="{{ url_for('join_team') }}">加入团队</a><br/><br/>
 </div>
 {% if teams %}
+<h2>我的团队</h2>
 <div class="span24">
 
 {% for team in teams %}
