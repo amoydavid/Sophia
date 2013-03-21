@@ -351,3 +351,13 @@ h2{
 .team-item{
     margin-bottom: 10px;
 }
+.user-list .user-item{
+    text-align: center;
+}
+.user-list .user-item .avatar{
+    width: 100px;
+    height: auto;
+}
+.invite-user-btn {
+    margin-top: 20px;
+}

@@ -37,3 +37,5 @@ nosetests.xml
 
 .idea
 .DS_Store
+
+local_config.py

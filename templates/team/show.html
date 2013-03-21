@@ -1,18 +1,41 @@
 {% extends 'layout/base.html' %}
 {% block title %}{{ team.name }}{% endblock %}
 {% block content %}
-    <h2>{{ team.name }} 的所有项目</h2>
     <div class="row">
-        <div class="span12"><a href="{{ url_for('project_create', team_id=team.id) }}" class="btn btn-primary">创建新项目</a></div>
-    </div>
-    <div class="row">
-        {% for project in team.projects %}
-            <div class="span6">
-                <a href="{{ url_for("project_index", project_id = project.id) }}">
-                    <h2>{{ project.name }} <i class="icon-arrow-right"></i></h2>
-                    <p>{{ project.subject }}</p>
+    <div class="span18">
+        <h2>{{ team.name }}</h2>
+        <h5>相比到达的地方，同行的人更重要</h5>
+            <div class="row user-list">
+            {% for user in team.users %}
+            <div class="span2 user-item">
+                <a href="{{ url_for('user.show', user_id=user.id) }}">
+                    <img class="avatar" src='{{ url_for('uploaded_avatar', filename=user.avatar) }}'/>
+                    <span>{{ user.name }}</span>
                 </a>
             </div>
-        {% endfor %}
+            {% endfor %}
+            </div>
+        <hr/>
+        <h5>所有项目</h5>
+        <div class="row">
+            {% for project in team.projects %}
+                <div class="span6">
+                    <a href="{{ url_for("project_index", project_id = project.id) }}">
+                        <h4>{{ project.name }} <i class="icon-arrow-right"></i></h4>
+                        <p>{{ project.subject }}</p>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="span6">
+        {% if team.admin_id == current_user.id %}
+        <ul class="nav nav-tabs nav-stacked">
+            <li><a href="{{ url_for('team_setting', team_id=team.id) }}">修改团队信息</a></li>
+            <li><a href="{{ url_for('invite_member', team_id=team.id) }}">邀请新成员</a></li>
+            <li><a href="{{ url_for('project_create', team_id=team.id) }}">创建新项目</a></li>
+        </ul>
+        {% endif %}
+    </div>
     </div>
 {% endblock %}

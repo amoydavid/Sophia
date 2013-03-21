@@ -2,14 +2,17 @@
 
 import os
 import Image
+import time
+import uuid
+import hashlib
 
 from flask import url_for, render_template, g, send_from_directory, flash, redirect, request
 from flask.ext.login import current_user, login_required
 
 from website import app
 from config import GLOBAL_SETTING, STATIC_FOLDER, DEBUG, UPLOAD_FOLDER, PIC_EXTENSIONS, AVATAR_FOLDER
-from models import Topic, Project, Todolist, Todo, Team, db, Feed
-from forms import TopicForm, CommentForm, TodoCommentForm, TodolistForm, ProjectForm, TeamForm
+from models import Topic, Project, Todolist, Todo, Team, db, Feed, InviteCode
+from forms import TopicForm, CommentForm, TodoCommentForm, TodolistForm, ProjectForm, TeamForm, JoinTeam
 
 
 @app.before_request
@@ -66,6 +69,34 @@ def team_setting(team_id):
 def team_show(team_id):
     team = Team.query.get(team_id)
     return render_template('team/show.html', team=team)
+
+
+@app.route('/team/<int:team_id>/invite/', methods=['POST', 'GET'])
+@login_required
+def invite_member(team_id):
+    team = Team.query.get(team_id)
+    if request.method == 'POST':
+        invite_code = InviteCode()
+        invite_code.created_at = int(time.time())
+        invite_code.team_id = team_id
+        invite_code.code = hashlib.md5(str(uuid.uuid1())).hexdigest()
+        invite_code.used = 0
+        db.session.add(invite_code)
+        db.session.commit()
+        return redirect(url_for('invite_member', team_id=team_id))
+    team_codes = InviteCode.query.filter_by(team_id=team_id, used=0)
+    return render_template('team/invite.html', team=team, team_codes=team_codes)
+
+
+@app.route('/team/join/', methods=['POST', 'GET'])
+@login_required
+def join_team():
+    form = JoinTeam(current_user)
+    if form.validate_on_submit():
+        team = Team.query.get(form.team_id)
+        flash(u'欢迎加入 %s' % team.name)
+        return redirect(url_for('team_show', team_id=form.team_id))
+    return render_template('team/join.html', form=form)
 
 
 @app.route('/project/<int:project_id>/')
@@ -126,7 +157,7 @@ def project_todo_status(project_id, status, page):
     items_per_page = 40
     todos = None
     if status.lower() == 'completed':
-        todos = Todo.query.filter_by(project_id=project_id, done=1).order_by('finished_at desc')\
+        todos = Todo.query.filter_by(project_id=project_id, done=1).order_by('finished_at desc') \
             .paginate(page, items_per_page)
     return render_template('project/completed_todos.html', todos=todos, project=project, status=status)
 

@@ -3,7 +3,7 @@ __author__ = 'liuwei'
 
 from flask.ext.wtf import Form, TextField, Required, PasswordField, HiddenField, TextAreaField, \
     FileField, SelectField, BooleanField
-from models import User, Topic, db, Todolist, Attachment, Team, Project, TeamUser
+from models import User, Topic, db, Todolist, Attachment, Team, Project, TeamUser, InviteCode
 import time
 import os
 import uuid
@@ -360,4 +360,33 @@ class TeamForm(Form):
             db.session.query(Project).filter(Project.team_id == team.id).update({Project.status: 1})
             db.session.commit()
         self.team = team
+        return True
+
+
+class JoinTeam(Form):
+    code = TextField(u'团队邀请码', validators=[Required(u'请填写邀请码')])
+
+    def __init__(self, user, *args, **kwargs):
+        Form.__init__(self, *args, **kwargs)
+        self.user = user
+
+    def validate(self):
+        rv = Form.validate(self)
+        if not rv:
+            return False
+        invite_code = InviteCode.query.filter_by(code=self.code.data, used=0).first()
+        if not invite_code:
+            self.code.errors.append(u'邀请码不正确')
+            return False
+        invite_code.email = self.user.email
+        invite_code.user_id = self.user.id
+        invite_code.used = 1
+        db.session.add(invite_code)
+        db.session.commit()
+        team_user = TeamUser()
+        team_user.team_id = invite_code.team_id
+        team_user.user_id = self.user.id
+        db.session.add(team_user)
+        db.session.commit()
+        self.team_id = invite_code.team_id
         return True

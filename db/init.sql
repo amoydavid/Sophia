@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.1.44)
 # Database: basecamp
-# Generation Time: 2013-03-12 15:26:29 +0000
+# Generation Time: 2013-03-21 14:25:32 +0000
 # ************************************************************
 
 
@@ -57,6 +57,25 @@ CREATE TABLE `feed` (
   `new_value` varchar(256) DEFAULT NULL,
   `old_user_id` int(11) DEFAULT NULL,
   `new_user_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+# Dump of table invite_code
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `invite_code`;
+
+CREATE TABLE `invite_code` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) DEFAULT NULL,
+  `code` varchar(64) DEFAULT NULL,
+  `project_ids` varchar(1024) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `email` varchar(64) DEFAULT NULL,
+  `user_id` int(11) DEFAULT '0',
+  `used` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

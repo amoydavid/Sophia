@@ -9,7 +9,7 @@
 <div class="span24">
 
 {% for team in teams %}
-<div class="team-item"><a href="{{ url_for('team_show', team_id=team.id) }}">{{ team.name }}</a> {% if team.admin_id == current_user.id %}<a href="{{ url_for('team_setting', team_id=team.id) }}" class="btn">管理</a>{% endif %}</div>
+<div class="team-item"><a href="{{ url_for('team_show', team_id=team.id) }}">{{ team.name }}</a></div>
 {% endfor %}
 </div>
 {% endif %}

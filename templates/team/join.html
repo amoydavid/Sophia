@@ -1,0 +1,23 @@
+{% extends 'layout/base.html' %}
+{% block title %}加入团队{% endblock %}
+{% block content %}
+    <div class="row">
+        <form action="{{ url_for('join_team') }}" method="post">
+            <fieldset>
+                <legend>加入团队</legend>
+                {{ form.csrf_token }}
+                <div class="controls-row">
+                    {{ form.code(class='span10',maxlength=64,tabindex=1,placeholder='邀请码') }}
+                    {%- if form.code.errors %}
+                        <span class="help-inline">
+            {%- for error in form.code.errors %}
+                <span class="text-error">{{ error }}</span>
+            {%- endfor %}
+                </span>
+                    {%- endif %}
+                </div>
+                <input type="submit" value="提交" class="btn btn-primary">
+            </fieldset>
+        </form>
+    </div>
+{% endblock %}

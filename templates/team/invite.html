@@ -1,0 +1,15 @@
+{% extends 'layout/base.html' %}
+{% block title %}邀请新人{% endblock %}
+{% block content %}
+<div class="row">
+    <form action="{{ url_for('invite_member', team_id=team.id) }}" method="post">
+        <fieldset>
+            <legend>邀请新人加入 {{ team.name }}</legend>
+            <input type="submit" value="再要一个邀请码" class="btn"><br/><br/>
+            {% for code in team_codes %}
+            <input type="text" value="{{ code.code }}"><br/>
+            {% endfor %}
+        </fieldset>
+    </form>
+</div>
+{% endblock %}

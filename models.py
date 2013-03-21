@@ -252,7 +252,6 @@ class Todo(db.Model):
         return json.dumps(obj)
 
 
-
 class Feed(db.Model):
     __tablename__ = 'feed'
     id = db.Column(db.Integer, primary_key=True)
@@ -271,6 +270,17 @@ class Feed(db.Model):
     old_user = db.relationship('User', uselist=False, foreign_keys=old_user_id, primaryjoin=old_user_id == User.id)
     new_user = db.relationship('User', uselist=False, foreign_keys=new_user_id, primaryjoin=new_user_id == User.id)
 
+
+class InviteCode(db.Model):
+    __tablename__ = 'invite_code'
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.Integer)
+    team_id = db.Column(db.Integer)
+    project_ids = db.Column(db.String(1024))
+    code = db.Column(db.String(64))
+    email = db.Column(db.String(64))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    used = db.Column(db.Boolean)
 
 
 from sqlalchemy import event
