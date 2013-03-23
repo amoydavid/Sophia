@@ -5,7 +5,7 @@
         <li><a href="{{ url_for("project_feed", project_id=project.id) }}">回顾</a></li>
         <li><a href="{{ url_for("topic_list", project_id=project.id) }}">讨论</a></li>
         <li><a href="{{ url_for("project_todos", project_id=project.id) }}">任务</a></li>
-        <li><a href=".">文件</a></li>
+        <li><a href="{{ url_for("project_files", project_id=project.id) }}">文件</a></li>
         <li><a href="{{ url_for("project_setting", project_id=project.id) }}">项目设置</a></li>
     </ul>
 {%- endmacro %}
@@ -54,4 +54,20 @@
 {%- else  %}
 <a href="{{ url_for('todo_show', todo_id=feed.todo_id) }}">{{ feed.todo.subject }}</a>
 {%- endif  %}
+{% endmacro %}
+
+{% macro render_file(file) %}
+    <div class="file">
+        <div class="file-thumb">
+            <a href="{{ url_for('uploaded_file', filename=file.path) }}" title="{{ file.filename }}" target="_blank">
+                <img class="image" alt="{{ file.filename }}" src="{{ url_for('uploaded_file', filename=file.path, size=60) }}">
+            </a>
+        </div>
+        <div class="file-info">
+            <div class="title">
+                <a class="name" target="_blank" href="{{ url_for('uploaded_file', filename=file.path) }}">{% if file.filename %}{{ file.filename }}{% else %}{{ file.path }}{% endif %}</a>
+                <span class="size">{{ file.size|file_size }}</span>
+            </div>
+        </div>
+    </div>
 {% endmacro %}

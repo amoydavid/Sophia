@@ -1,0 +1,59 @@
+{% extends 'layout/base.html' %}
+{% from '_helpers.html' import render_pagination, render_file %}
+{% block title %}{{ project.name }} 所有文件{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="span18" id="project-files">
+            <ul class="breadcrumb">
+                <li>项目：<a href="{{ url_for("project_index", project_id=project.id) }}">{{ project.name }}</a><span class="divider">/</span></li>
+                <li>回顾</li>
+            </ul>
+            {%- if files.items %}
+                <div class="file-list">
+                    {%- for file in files.items %}
+                        {%- if last_file %}
+                            {%- set last_date = last_file.created_at|datetime('%Y%m%d') %}
+                            {%- set now_date = file.created_at|datetime('%Y%m%d') %}
+                            {%- if now_date != last_date %}
+                                {%- set is_new_date = True  %}
+                            {%- else %}
+                                {%- set is_new_date = False  %}
+                            {%- endif %}
+                        {%- else %}
+                            {%- set is_new_date = True  %}
+                            {%- set is_first_date = True  %}
+                        {%- endif %}
+                        {%- if is_new_date %}
+                            {%- if not is_first_date %}
+                                </div>
+                                </div><!--/day-->
+                            {%- endif %}
+                            {%- set is_first_date = False %}
+                            <div class="day row">
+                            <div class="hd span2">
+                                <div class="m-d">
+                                    {{ file.created_at|datetime('%m/%d') }}
+                                </div>
+                                <div class="w">{{ file.created_at|weekday }}</div>
+                            </div>
+                            <div class="bd span16">
+                        {%- endif %}
+                        {{ render_file(file) }}
+                        {%- set last_file = file %}
+                    {%- endfor %}
+                    </div>
+                    </div><!--/day-->
+                <div class="more">
+                    {{ render_pagination(files, 'project_files', project_id=project.id) }}
+                </div>
+                </div>
+            {%- else %}
+                <div class="well-small">还没有任何动态</div>
+            {%- endif %}
+    </div>
+    <div class="span6">
+        {% from '_helpers.html' import project_sidebar %}
+        {{ project_sidebar(project) }}
+    </div>
+    </div>
+{% endblock %}

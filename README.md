@@ -2,6 +2,7 @@
 
 
 Sophia 是一个团队协作平台，或是一个todolist+论坛。
+目前 Sophia 还不是一个可用版本，请谨慎安装，直接导入init.sql将有可能drop掉原有数据。
 
 ## 功能：
 

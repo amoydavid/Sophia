@@ -308,17 +308,28 @@ h2{
     margin-top: 20px;
 }
 
-#page-completed-todos .day, #page-member-completed-todos .day {
+#page-completed-todos .day,
+#page-member-completed-todos .day,
+#project-files .day
+{
     padding: 20px 0 10px;
     border-bottom: 1px solid #ddd;
 }
-#page-completed-todos .day .hd .m-d, #page-member-completed-todos .day .hd .m-d {
+#page-completed-todos .day .hd .m-d,
+#page-member-completed-todos .day .hd .m-d,
+#project-files .day .hd .m-d
+{
     font-size: 20px;
 }
-#page-completed-todos .day .hd .w, #page-member-completed-todos .day .hd .w {
+#page-completed-todos .day .hd .w,
+#page-member-completed-todos .day .hd .w,
+#project-files .day .hd .w,
+{
     font-size: 12px;
 }
-#page-completed-todos .day .bd .todo, #page-member-completed-todos .day .bd .todo {
+#page-completed-todos .day .bd .todo,
+#page-member-completed-todos .day .bd .todo
+{
     padding: 2px 0 2px;
     font-size: 14px;
 }
@@ -367,4 +378,33 @@ h2{
 }
 .user_profile h2{
     margin-top: 14px;
+}
+
+.file-list .file {
+    min-height: 60px;
+    margin: 0 0 20px 0;
+}
+.file-list .file .file-thumb {
+    width: 120px;
+    float: left;
+}
+.file-list .file .file-thumb a {
+    display: block;
+    float: right;
+}
+.file-list .file .file-thumb a img.image {
+    border: 1px solid #d0d0d0;
+    padding: 1px;
+    max-width: 116px;
+    max-height: 116px;
+    display: block;
+    background: #ffffff;
+}
+.file-list .file .file-info {
+    float: left;
+    margin: 0 0 0 20px;
+}
+file-list .file .file-info .title .name {
+    display: block;
+    color: #333333;
 }

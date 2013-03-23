@@ -31,5 +31,15 @@ def friendly_datetime(value):
         return time.strftime("%Y-%m-%d", time.localtime(value))
 
 
+def file_size(size):
+    if not size:
+        return ''
+    if size < 1000:
+        return '%d bytes' % size
+    elif size < 1000 * 1000:
+        return "%.1fk" % (size / 1000.0)
+    return "%.1fm" % (size / 1000000.0)
+
+
 def format_gfm(value):
     return markdown(gfm(value))

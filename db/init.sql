@@ -28,6 +28,8 @@ DROP TABLE IF EXISTS `attachment`;
 CREATE TABLE `attachment` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `path` varchar(128) DEFAULT NULL,
+  `filename` varchar(128) DEFAULT NULL,
+  `size` int(11) DEFAULT '0',
   `ext_name` varchar(20) DEFAULT NULL,
   `project_id` int(11) DEFAULT '0',
   `topic_id` int(11) DEFAULT '0',

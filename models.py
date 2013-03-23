@@ -14,6 +14,8 @@ class Attachment(db.Model):
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
     topic_id = db.Column(db.Integer, db.ForeignKey('topic.id'))
     path = db.Column(db.String(128))
+    filename = db.Column(db.String(128))
+    size = db.Column(db.Integer)
     ext_name = db.Column(db.String(20))
     root_class = db.Column(db.String(32))
     root_id = db.Column(db.Integer)

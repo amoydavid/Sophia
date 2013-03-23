@@ -103,8 +103,11 @@ def upload_file():
         ext_name = file.filename.rsplit('.', 1)[1]
         filename = '{0:s}.{1:s}'.format(uuid.uuid1(), ext_name)
         file.save(os.path.join(UPLOAD_FOLDER, filename))
+        size = os.path.getsize(os.path.join(UPLOAD_FOLDER, filename))
         attachment = Attachment()
         attachment.path = filename
+        attachment.filename = file.filename
+        attachment.size = size
         attachment.created_at = int(time.time())
         attachment.user_id = current_user.id
         attachment.ext_name = ext_name

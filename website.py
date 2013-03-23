@@ -62,9 +62,10 @@ from api import api
 app.register_blueprint(user, url_prefix='/user')
 app.register_blueprint(api, url_prefix='/api')
 
-from util import datetimeformat, friendly_datetime, weekday, format_gfm
+from util import datetimeformat, friendly_datetime, weekday, format_gfm, file_size
 
 app.jinja_env.filters['datetime'] = datetimeformat
 app.jinja_env.filters['friendly_datetime'] = friendly_datetime
 app.jinja_env.filters['weekday'] = weekday
 app.jinja_env.filters['gfm'] = format_gfm
+app.jinja_env.filters['file_size'] = file_size

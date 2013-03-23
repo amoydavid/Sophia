@@ -91,7 +91,7 @@
 <div id="attachment-{{ id }}" class="fl attachment-item">
 <img src='{{ url }}?size=50' /><br/>
 <input type="hidden" value="{{ id }}" name="attachment">
-<a href="javascript:;">删除</a>
+<a href="javascript:;" class='delete'>删除</a>
 </div>
 </script>
 {% endraw %}
@@ -173,8 +173,8 @@ window.onload = function () {
         upload_success_handler : uploadSuccess
     });
 };
-$('.attachment-item a').bind('click', function(){
+$('#attachments-preview').on('click', '.attachment-item a.delete', function(){
     $(this).parent().remove();
-})
+});
 </script>
 {% endblock %}
