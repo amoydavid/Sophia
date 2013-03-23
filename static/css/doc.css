@@ -32,7 +32,7 @@ h2{
 
 .messages .message .attachments {
     float: right;
-    padding: 2px 5px 5px 10px;
+    padding: 2px 12px 5px 10px;
 }
 
 .messages .message .attachments img {
@@ -360,4 +360,11 @@ h2{
 }
 .invite-user-btn {
     margin-top: 20px;
+}
+.user_profile .avatar {
+    width: 80px;
+    height: 100%;
+}
+.user_profile h2{
+    margin-top: 14px;
 }

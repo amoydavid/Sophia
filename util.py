@@ -24,7 +24,7 @@ def friendly_datetime(value):
     current_time = time.time()
     if time.strftime('%Y%m%d', time.localtime(value)) == time.strftime('%Y%m%d', time.localtime(current_time)):
         return time.strftime("%H:%M", time.localtime(value))
-    elif time.strftime('%Y%m', time.localtime(value)) == time.strftime('%Y%m', time.localtime(current_time)):
+    elif time.strftime('%Y', time.localtime(value)) == time.strftime('%Y', time.localtime(current_time)):
         date = time.localtime(value)
         return u"%s月%s日" % (date.tm_mon, date.tm_mday)
     else:

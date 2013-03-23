@@ -90,6 +90,15 @@ class User(db.Model):
             team_ids.append(team.id)
         return Project.query.filter(Project.team_id.in_(team_ids)).filter(Project.status == 0).all()
 
+    def isSameTeam(self, user_id):
+        team_ids = []
+        for team_user in TeamUser.query.filter(TeamUser.user_id == self.id).all():
+            team_ids.append(team_user.team_id)
+        for team_user in TeamUser.query.filter(TeamUser.user_id == user_id).all():
+            if team_ids.count(team_user.team_id):
+                return True
+        return False
+
     def __repr__(self):
         obj = {
             'id': self.id,

@@ -2,11 +2,11 @@
 __author__ = 'liuwei'
 
 import os
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, abort
 from flask.ext.login import (login_required,
-                             login_user, logout_user)
+                             login_user, logout_user, current_user)
 from forms import LoginForm, RegisterForm, ProfileForm
-from models import User
+from models import User, Feed
 from config import AVATAR_FOLDER
 import Image
 
@@ -40,10 +40,17 @@ def show_index():
     return "user show" + pw_hash
 
 
-@user.route('/<int:user_id>/')
+@user.route('/<int:user_id>/', defaults={'page': 1})
+@user.route('/<int:user_id>/page/<int:page>/')
 @login_required
-def show(user_id):
-    return render_template('user/show.html')
+def show(user_id, page):
+    user = User.query.get(user_id)
+    if user.id != current_user.id and not user.isSameTeam(current_user.id):
+        abort(403)
+    items_per_page = 40
+    feeds = Feed.query.filter_by(user_id=user.id).order_by('created_at desc') \
+        .paginate(page, items_per_page)
+    return render_template('user/show.html', user=user, feeds=feeds)
 
 
 @user.route('/<int:user_id>/setting/', methods=['GET', 'POST'])

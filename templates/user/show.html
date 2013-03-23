@@ -1,5 +1,62 @@
 {% extends 'layout/base.html' %}
-{% block title %}{{ current_user.name }}个人信息{% endblock %}
+{% from '_helpers.html' import render_pagination, render_feed %}
+{% block body_class %}user_profile{% endblock %}
+{% block title %}{{ user.name }}个人信息{% endblock %}
 {% block content %}
-hello {{ current_user.name }}
+<div class="row-fluid">
+<div class="span2 avatar-wrap">
+    <img src="{{ url_for('uploaded_avatar', filename=user.avatar) }}" class="avatar">
+</div>
+<div class="span22">
+    <h2>{{ user.name }}</h2>
+    <p>{{ user.email }}</p>
+</div>
+</div>
+<div class="row">
+    <div class="span18" id="page-completed-todos">
+    {%- if feeds.items %}
+            {%- for feed in feeds.items %}
+                {%- if last_feed %}
+                    {%- set last_date = last_feed.created_at|datetime('%Y%m%d') %}
+                    {%- set now_date = feed.created_at|datetime('%Y%m%d') %}
+                    {%- if now_date != last_date %}
+                        {%- set is_new_date = True  %}
+                    {%- else %}
+                        {%- set is_new_date = False  %}
+                    {%- endif %}
+                {%- else %}
+                    {%- set is_new_date = True  %}
+                    {%- set is_first_date = True  %}
+                {%- endif %}
+                {%- if is_new_date %}
+                    {%- if not is_first_date %}
+                        </div>
+                        </div><!--/day-->
+                    {%- endif %}
+                    {%- set is_first_date = False %}
+                    <div class="day row">
+                    <div class="hd span2">
+                        <div class="m-d">
+                            {{ feed.created_at|datetime('%m/%d') }}
+                        </div>
+                        <div class="w">{{ feed.created_at|weekday }}</div>
+                    </div>
+                    <div class="bd span16">
+                {%- endif %}
+                <div class="todo">
+                    <i class="icon-check"></i>&nbsp;
+                    {{ render_feed(feed) }}
+                </div>
+                {%- set last_feed = feed %}
+            {%- endfor %}
+            </div>
+            </div><!--/day-->
+            <div class="more">
+                {{ render_pagination(feeds, 'user.show', user_id=user.id) }}
+            </div>
+    {%- else %}
+        <div class="well-small">还没有任何动态</div>
+    {%- endif %}
+    </div>
+</div>
 {% endblock %}

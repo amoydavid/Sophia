@@ -15,7 +15,7 @@
     <title>{% block all_title %}{% block title %}{% endblock %} - {{ g.app.name }}{% endblock %}</title>
     {%- endblock %}
 </head>
-<body>
+<body class="{% block body_class%}{% endblock %}">
 {%- if not current_user.is_anonymous() %}
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
