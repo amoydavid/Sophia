@@ -7,7 +7,7 @@ import os
 import uuid
 from flask import Blueprint, request, redirect, url_for
 from flask.ext.login import (current_user, login_required)
-from models import Attachment
+from models import Attachment, TodoNotify
 
 
 api = Blueprint('api', __name__,
@@ -120,3 +120,19 @@ def upload_file():
         }
         return json.dumps(obj)
     return ''
+
+
+@api.route('/todo/link/<int:from_id>/<int:to_id>/', methods=['POST'])
+@login_required
+def link_todo(from_id, to_id):
+    notify = TodoNotify.query.filter_by(from_id=from_id, to_id=to_id).first()
+    if notify:
+        return '已经链接过了亲'
+    notify = TodoNotify()
+    notify.from_id = from_id
+    notify.to_id = to_id
+    notify.created_at = int(time.time())
+    notify.user_id = 0
+    db.session.add(notify)
+    db.session.commit()
+    return '链接成功'

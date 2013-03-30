@@ -94,6 +94,10 @@ class RegisterForm(Form):
         if user is not None:
             self.email.errors.append(u'Email已被注册')
             return False
+        user = User.query.filter_by(name=self.name.data).first()
+        if user is not None:
+            self.name.errors.append(u'昵称已被使用')
+            return False
         user = User(self.name.data)
         created_time = int(time.time())
         user.email = self.email.data

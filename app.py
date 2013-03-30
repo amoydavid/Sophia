@@ -6,7 +6,7 @@ import time
 import uuid
 import hashlib
 
-from flask import url_for, render_template, g, send_from_directory, flash, redirect, request
+from flask import url_for, render_template, g, send_from_directory, flash, redirect, request, abort
 from flask.ext.login import current_user, login_required
 
 from website import app
@@ -54,6 +54,8 @@ def team_create():
 @login_required
 def team_setting(team_id):
     team = Team.query.get(team_id)
+    if not current_user.in_team(team_id):
+        abort(404)
     form = TeamForm(user=current_user, team_id=team.id, name=team.name)
     if form.validate_on_submit():
         if form.team.status == 0:
@@ -67,6 +69,8 @@ def team_setting(team_id):
 @app.route('/team/<int:team_id>/')
 @login_required
 def team_show(team_id):
+    if not current_user.in_team(team_id):
+        abort(404)
     team = Team.query.get(team_id)
     return render_template('team/show.html', team=team)
 
@@ -74,6 +78,8 @@ def team_show(team_id):
 @app.route('/team/<int:team_id>/invite/', methods=['POST', 'GET'])
 @login_required
 def invite_member(team_id):
+    if not current_user.in_team(team_id):
+        abort(404)
     team = Team.query.get(team_id)
     if request.method == 'POST':
         invite_code = InviteCode()
@@ -104,6 +110,8 @@ def join_team():
 def project_index(project_id):
     topics = Topic.query.filter_by(project_id=project_id, is_comment=0).order_by('updated_at desc')[0:3]
     project = Project.query.get(project_id)
+    if not current_user.in_team(project.team_id):
+        abort(404)
     team_users = project.team.users
     undone_lists = Todolist.query.filter_by(project_id=project_id, has_finished=0).order_by('created_at asc').all()
     done_lists = Todolist.query.filter_by(project_id=project_id, has_finished=1).order_by('created_at desc').all()
@@ -126,6 +134,8 @@ def project_create():
 @login_required
 def project_feed(project_id, page):
     project = Project.query.get(project_id)
+    if not current_user.in_team(project.team_id):
+        abort(404)
     items_per_page = 40
     feeds = Feed.query.filter_by(project_id=project_id).order_by('created_at desc') \
         .paginate(page, items_per_page)
@@ -137,6 +147,8 @@ def project_feed(project_id, page):
 @login_required
 def project_files(project_id, page):
     project = Project.query.get(project_id)
+    if not current_user.in_team(project.team_id):
+        abort(404)
     items_per_page = 40
     files = Attachment.query.filter_by(project_id=project_id).order_by('created_at desc') \
         .paginate(page, items_per_page)
@@ -147,6 +159,8 @@ def project_files(project_id, page):
 @login_required
 def project_setting(project_id):
     project = Project.query.get(project_id)
+    if current_user.id != project.creator_id:
+        abort(404)
     form = ProjectForm(user=current_user, team=project.team, project=project, team_id=project.team.id,
                        name=project.name, subject=project.subject)
     form.team_id.choices = [(g.id, g.name) for g in current_user.teams]
@@ -165,6 +179,8 @@ def project_setting(project_id):
 @login_required
 def project_todo_status(project_id, status, page):
     project = Project.query.get(project_id)
+    if not current_user.in_team(project.team_id):
+        abort(404)
     items_per_page = 40
     todos = None
     if status.lower() == 'completed':
@@ -176,6 +192,8 @@ def project_todo_status(project_id, status, page):
 @app.route('/project/<int:project_id>/todos/')
 def project_todos(project_id):
     project = Project.query.get(project_id)
+    if not current_user.in_team(project.team_id):
+        abort(404)
     team_users = project.team.users
     todolists = Todolist.query.filter_by(project_id=project_id, has_finished=0).order_by('created_at asc').all()
     title = u'所有任务'
@@ -188,6 +206,8 @@ def project_todos(project_id):
 @login_required
 def topic_create(project_id):
     project = Project.query.get(project_id)
+    if not current_user.in_team(project.team_id):
+        abort(404)
     form = TopicForm(current_user, project, request.form.getlist('attachment'))
     if form.validate_on_submit():
         topic = form.saveTopic()
@@ -203,6 +223,8 @@ def topic_create(project_id):
 @app.route('/project/<int:project_id>/topics/page/<int:page>/')
 def topic_list(project_id, page):
     project = Project.query.get(project_id)
+    if not current_user.in_team(project.team_id):
+        abort(404)
     pagination = Topic.query.filter_by(project_id=project.id, is_comment=0).order_by("topic.updated_at desc").paginate(
         page, 20)
     return render_template('project/topic_list.html', project=project, pagination=pagination)
@@ -212,6 +234,8 @@ def topic_list(project_id, page):
 @app.route('/topic/<int:topic_id>/page/<int:page>/', methods=['GET', 'POST'])
 def topic_detail(topic_id, page):
     topic = Topic.query.get(topic_id)
+    if not current_user.in_team(topic.project.team_id):
+        abort(404)
     form = CommentForm(current_user, topic, request.form.getlist('attachment'))
     items_per_page = 20
     if form.validate_on_submit():
@@ -241,6 +265,8 @@ def project_todolists(project_id, page):
 @app.route('/lists/<int:list_id>/', methods=['GET'])
 def todolist_show(list_id):
     todolist = Todolist.query.get(list_id)
+    if not current_user.in_team(todolist.project.team_id):
+        abort(404)
     project = todolist.project
     team_users = project.team.users
     todolists = [todolist]
@@ -255,6 +281,8 @@ def todolist_show(list_id):
 @login_required
 def todo_show(todo_id, page):
     todo = Todo.query.get(todo_id)
+    if not current_user.in_team(todo.project.team_id):
+        abort(404)
     form = TodoCommentForm(current_user, todo, request.form.getlist('attachment'))
     items_per_page = 10
     if form.validate_on_submit():
@@ -277,6 +305,8 @@ def todo_show(todo_id, page):
 @login_required
 def todolist_create(project_id):
     project = Project.query.get(project_id)
+    if not current_user.in_team(project.team_id):
+        abort(404)
     form = TodolistForm(current_user, project_id)
     if form.validate_on_submit():
         flash(u'%s 创建成功' % form.todolist.name)

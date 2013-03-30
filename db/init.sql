@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.1.44)
 # Database: basecamp
-# Generation Time: 2013-03-21 14:25:32 +0000
+# Generation Time: 2013-03-30 13:12:36 +0000
 # ************************************************************
 
 
@@ -22,8 +22,6 @@
 
 # Dump of table attachment
 # ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `attachment`;
 
 CREATE TABLE `attachment` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -45,8 +43,6 @@ CREATE TABLE `attachment` (
 # Dump of table feed
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `feed`;
-
 CREATE TABLE `feed` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `team_id` int(11) DEFAULT NULL,
@@ -67,8 +63,6 @@ CREATE TABLE `feed` (
 # Dump of table invite_code
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `invite_code`;
-
 CREATE TABLE `invite_code` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `team_id` int(11) DEFAULT NULL,
@@ -85,8 +79,6 @@ CREATE TABLE `invite_code` (
 
 # Dump of table project
 # ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `project`;
 
 CREATE TABLE `project` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -108,8 +100,6 @@ CREATE TABLE `project` (
 # Dump of table team
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `team`;
-
 CREATE TABLE `team` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(256) DEFAULT NULL,
@@ -124,8 +114,6 @@ CREATE TABLE `team` (
 # Dump of table team_user
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `team_user`;
-
 CREATE TABLE `team_user` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `team_id` int(11) DEFAULT NULL,
@@ -137,8 +125,6 @@ CREATE TABLE `team_user` (
 
 # Dump of table todo
 # ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `todo`;
 
 CREATE TABLE `todo` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -167,8 +153,6 @@ CREATE TABLE `todo` (
 # Dump of table todo_list
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `todo_list`;
-
 CREATE TABLE `todo_list` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(256) DEFAULT NULL,
@@ -184,10 +168,22 @@ CREATE TABLE `todo_list` (
 
 
 
-# Dump of table topic
+# Dump of table todo_notify
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `topic`;
+CREATE TABLE `todo_notify` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `from_id` int(11) DEFAULT NULL,
+  `to_id` int(11) DEFAULT '0',
+  `user_id` int(11) NOT NULL DEFAULT '0',
+  `created_at` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+# Dump of table topic
+# ------------------------------------------------------------
 
 CREATE TABLE `topic` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -209,8 +205,6 @@ CREATE TABLE `topic` (
 
 # Dump of table user
 # ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `user`;
 
 CREATE TABLE `user` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,

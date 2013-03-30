@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ url_for("static", filename='css/site.css') }}" />
     <link rel="stylesheet" href="{{ url_for("static", filename='css/doc.css') }}" />
     <script src="{{ url_for("static",filename='js/jquery-1.9.1.min.js') }}"></script>
+    <script src="{{ url_for("static",filename='js/jquery-ui-1.10.2.custom.min.js') }}"></script>
     <script src="{{ url_for("static",filename='js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for("static",filename='js/site.js') }}"></script>
     {% block head_js %}{% endblock %}
@@ -31,7 +32,6 @@
                     <li><a href="{{ url_for("run") }}">项目</a></li>
                     <li><a href="{{ url_for('team_index') }}">团队</a></li>
                     <li><a href="{{ url_for('user.show', user_id=current_user.id) }}">我自己</a></li>
-                    <li><a href=".">消息(0)</a></li>
                 </ul>
                 <ul class="nav pull-right" id="main-menu-right">
                     {% if current_user.is_authenticated() %}

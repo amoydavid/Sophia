@@ -6,7 +6,7 @@
         <div class="span18" id="project-files">
             <ul class="breadcrumb">
                 <li>项目：<a href="{{ url_for("project_index", project_id=project.id) }}">{{ project.name }}</a><span class="divider">/</span></li>
-                <li>回顾</li>
+                <li>文件</li>
             </ul>
             {%- if files.items %}
                 <div class="file-list">
@@ -48,7 +48,7 @@
                 </div>
                 </div>
             {%- else %}
-                <div class="well-small">还没有任何动态</div>
+                <div class="well-small">还没有任何文件</div>
             {%- endif %}
     </div>
     <div class="span6">

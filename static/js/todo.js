@@ -29,6 +29,22 @@ var Todo = Backbone.Model.extend({
     setDueDate:function(date){
         this.save({due_date:date});
     },
+    preLink:function(todo_id){
+        $.ajax({
+            method:'post',
+            url:'/api/todo/link/'+todo_id+'/'+this.id+'/',
+            success:function(data){
+                $.pnotify({
+                    text: data,
+                    type: 'info',
+                    styling: 'bootstrap',
+                    delay:2000,
+                    history: false,
+                    stack: false
+                });
+            }
+        });
+    },
     afterSync:function(model, resp, options){
         if(resp.model){
             this.set(resp.model);
@@ -82,6 +98,7 @@ var TodoView = Backbone.View.extend({
         var html = Mustache.render(this.template(), this.model.toJSON());
         this.$el.html(html);
         var self = this;
+        this.$el.find('.link').data('todo_id', this.model.id);
         this.$el.find('.due-date').datepicker({
             format: 'yyyy-mm-dd',
             language:'zh-CN',
@@ -108,6 +125,27 @@ var TodoView = Backbone.View.extend({
         } else {
             this.$el.find('.todo-assignee').text('未指派').removeClass('badge-info');
         }
+        this.$el.find('.link').draggable({
+            //cancel: "a.ui-icon", // clicking an icon won't initiate dragging
+            revert: "invalid", // when not dropped, the item will revert back to its initial position
+            containment: "document",
+            helper: "clone",
+            cursor: "move",
+            zIndex: 100
+        }).droppable({
+            accept: ".todo .link",
+            hoverClass: 'btn-info',
+            drop: function( event, ui ) {
+                self.model.preLink(ui.draggable.data('todo_id'));
+            },
+            activate: function( event, ui ) {
+                $(this).addClass('btn-primary');
+
+            },
+            deactivate:function( event, ui ) {
+                $(this).removeClass('btn-primary');
+            }
+        }).popover();
 
         return this;
     },

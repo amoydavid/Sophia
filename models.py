@@ -5,6 +5,7 @@ __author__ = 'liuwei'
 from website import db
 import json, hashlib, time
 from util import friendly_datetime
+from mail import send_mail
 
 
 class Attachment(db.Model):
@@ -100,6 +101,12 @@ class User(db.Model):
             if team_ids.count(team_user.team_id):
                 return True
         return False
+
+    def in_team(self, team_id):
+        team_ids = []
+        for team_user in TeamUser.query.filter(TeamUser.user_id == self.id).all():
+            team_ids.append(team_user.team_id)
+        return team_id in team_ids
 
     def __repr__(self):
         obj = {
@@ -222,7 +229,17 @@ class Todo(db.Model):
         return db.object_session(self).query(Attachment).filter(Attachment.root_id == self.id,
                                                                 Attachment.root_class == 'todo').all()
 
+    def _get_target_todo(self):
+        todo_ids = []
+        notifies = db.object_session(self).query(TodoNotify).filter(TodoNotify.from_id == self.id,
+                                                                    TodoNotify.to_id > 0).all()
+        for item in notifies:
+            if item.to_id not in todo_ids:
+                todo_ids.append(item.to_id)
+        return db.object_session(self).query(Todo).filter(Todo.id.in_(todo_ids)).all()
+
     attachments = property(_get_attachments)
+    target_todo = property(_get_target_todo)
 
     def __repr__(self):
         due_date = ''
@@ -294,6 +311,43 @@ class InviteCode(db.Model):
     used = db.Column(db.Boolean)
 
 
+class TodoNotify(db.Model):
+    __tablename__ = 'todo_notify'
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.Integer)
+    from_id = db.Column(db.Integer)
+    to_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer)
+    created_at = db.Column(db.Integer)
+    to_todo = db.relationship('Todo', uselist=False, foreign_keys=to_id, primaryjoin=to_id == Todo.id)
+
+
+def get_notify_users(todo):
+    user_ids = [todo.creator_id]
+    notifies = TodoNotify.query.filter_by(from_id=todo.id).all()
+    for notify in notifies:
+        if notify.to_id:
+            if not notify.to_todo.creator_id in user_ids:
+                user_ids.append(notify.to_todo.creator_id)
+            if notify.to_todo.assignee_uid and not notify.to_todo.creator_id in user_ids:
+                user_ids.append(notify.to_todo.assignee_uid)
+        if notify.user_id and not notify.user_id in user_ids:
+            user_ids.append(notify.user_id)
+    if len(user_ids) > 0:
+        users = User.query.filter(User.id.in_(user_ids)).all()
+        return users
+    else:
+        return []
+
+
+def send_notify_email(todo, user):
+    from util import datetimeformat
+    finish_user = User.query.get(todo.finish_uid)
+    send_mail([user.email], u'[任务完成] %s' % todo.subject,
+              u"%s,\n\n任务【%s】已在 %s 由 %s 被标记为完成。" % (
+                  user.name, todo.subject, datetimeformat(todo.finished_at, '%Y-%m-%d %H:%M'), finish_user.name))
+
+
 from sqlalchemy import event
 
 
@@ -307,7 +361,7 @@ def feed_create_todo(connection, todo):
                         int(time.time())))
 
 
-def feed_set_todo_done(connection, todo):
+def set_todo_done(connection, todo):
     team_id = connection.scalar(
         "select team_id from project where id = %d"
         % todo.project_id)
@@ -315,6 +369,9 @@ def feed_set_todo_done(connection, todo):
                        'values(%i, %i, %i, %i, "done", %i)' %
                        (int(team_id), int(todo.project_id), int(todo.finish_uid), int(todo.id),
                         int(time.time())))
+    users = get_notify_users(todo)
+    for user in users:
+        send_notify_email(todo, user)
 
 
 def feed_set_todo_reopen(connection, todo):
@@ -393,7 +450,7 @@ def after_update_todo(mapper, connection, target):
                 connection.execute('update todo_list set has_finished = 1 where id = %i' % list_id)
             break
         result.close()
-        feed_set_todo_done(connection, target)
+        set_todo_done(connection, target)
     elif target._old_done == 1 and target.done == 0:
         connection.execute(
             'update todo_list set finish_count = finish_count-1,has_finished=0 where id = %i' % int(target.list_id))

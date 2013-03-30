@@ -66,6 +66,9 @@
                     <img alt="xx" class="avatar" src="xx">
                 </span-->
                 <span class="todo-content"><a href="/todo/{{ id }}/">{{ subject }}</a></span>
+                {{^done}}
+                <a href="javascript:" class="link btn-mini btn" data-title='提示' data-content="把此图标拖到其它todo上，当此任务完成时就会通知下个任务"><i class="icon-random"></i></a>
+                {{/done}}
                 <a href="/todo/{{ id }}/" class="badge">{{ reply_count }}评论</a>
                 {{#done}}
                 <span class="badge todo-finished badge-info">{{ finish_user.name }} {{ finished_at }}</span>

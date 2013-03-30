@@ -68,7 +68,7 @@ def send_mail(to, subject, text, files=None):
     #COMMASPACE==', '
     msg['To'] = COMMASPACE.join(to)
     msg['Date'] = formatdate(localtime=True)
-    msg.attach(MIMEText(text))
+    msg.attach(MIMEText(text, "plain", 'utf-8'))
 
     for _file in files:
         #'octet-stream': binary data
