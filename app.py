@@ -137,9 +137,14 @@ def project_feed(project_id, page):
     if not current_user.in_team(project.team_id):
         abort(404)
     items_per_page = 40
-    feeds = Feed.query.filter_by(project_id=project_id).order_by('created_at desc') \
-        .paginate(page, items_per_page)
-    return render_template('project/progress.html', project=project, feeds=feeds)
+    query = request.args.get('query')
+    if query == 'done':
+        feeds = Feed.query.filter_by(project_id=project_id, operation='done').order_by('created_at desc') \
+            .paginate(page, items_per_page)
+    else:
+        feeds = Feed.query.filter_by(project_id=project_id).order_by('created_at desc') \
+            .paginate(page, items_per_page)
+    return render_template('project/progress.html', project=project, feeds=feeds, query=query)
 
 
 @app.route('/project/<int:project_id>/files/', defaults={'page': 1})

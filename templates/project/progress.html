@@ -7,6 +7,7 @@
             <ul class="breadcrumb">
                 <li>项目：<a href="{{ url_for("project_index", project_id=project.id) }}">{{ project.name }}</a><span class="divider">/</span></li>
                 <li>回顾</li>
+                <li class="pull-right"><div class="btn-group"><a href="{{ url_for("project_feed", project_id=project.id) }}" class="btn btn-mini{% if not query%} active{% endif %}">全部</a><a href="{{ url_for("project_feed", project_id=project.id, query='done') }}" class="btn btn-mini{% if query=='done' %} active{% endif %}">只看完成</a></div></li>
             </ul>
             {%- if feeds.items %}
                 <div>
@@ -47,7 +48,7 @@
                     </div>
                     </div><!--/day-->
                 <div class="more">
-                    {{ render_pagination(feeds, 'project_feed', project_id=project.id) }}
+                    {{ render_pagination(feeds, 'project_feed', project_id=project.id, query=query) }}
                 </div>
                 </div>
             {%- else %}
