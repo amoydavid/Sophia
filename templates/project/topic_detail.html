@@ -130,7 +130,17 @@
     };
 
     $('#attachments-preview').on('click', '.attachment-item a.delete', function(){
-        $(this).parent().remove();
+        var $wrapper = $(this).parent();
+        var attach_id = $('input', $wrapper).val();
+        var self = this;
+        $.ajax({
+            url:'{{ url_for('api.delete_file') }}',
+            type:'post',
+            data:{id:attach_id},
+            success:function(){
+                $(self).parent().remove();
+            }
+        });
     });
 </script>
 {% endblock %}

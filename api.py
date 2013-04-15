@@ -122,6 +122,19 @@ def upload_file():
     return ''
 
 
+@api.route('/attachment/delete/', methods=['POST'])
+@login_required
+def delete_file():
+    attach_id = request.form.get('id')
+    attachment = Attachment.query.filter_by(id=attach_id, user_id=current_user.id).first()
+    if attachment:
+        attach_file = os.path.join(UPLOAD_FOLDER, attachment.path)
+        if os.path.isfile(attach_file):
+            os.remove(attach_file)
+        db.session.delete(attachment)
+        db.session.commit()
+    return '1'
+
 @api.route('/todo/link/<int:from_id>/<int:to_id>/', methods=['POST'])
 @login_required
 def link_todo(from_id, to_id):
