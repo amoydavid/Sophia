@@ -236,9 +236,9 @@ var List = Backbone.Model.extend({
 
             })
         });
-        _list.url = '/api/lists/'+this.id+'/todos.json';
+        _list.url = '/api/lists/'+this.id+'/todos.json?_rnd='+Math.random();
         if(G.todo_status) {
-            _list.url += '?done='+ G.todo_status
+            _list.url += '&done='+ G.todo_status
         }
         _list.fetch();
 

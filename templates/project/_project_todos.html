@@ -69,7 +69,9 @@
                 {{^done}}
                 <a href="javascript:" class="link btn-mini btn" data-title='提示' data-content="把此图标拖到其它todo上，当此任务完成时就会通知下个任务"><i class="icon-random"></i></a>
                 {{/done}}
+                {{#reply_count}}
                 <a href="/todo/{{ id }}/" class="badge">{{ reply_count }}评论</a>
+                {{/reply_count}}
                 {{#done}}
                 <span class="badge todo-finished badge-info">{{ finish_user.name }} {{ finished_at }}</span>
                 {{/done}}
