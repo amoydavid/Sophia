@@ -397,6 +397,8 @@ def feed_assign_todo(connection, todo, old_user_id):
 
 
 def feed_due_todo(connection, todo, old_due_date):
+    if str(old_due_date) == str(todo.due_date):
+        return
     team_id = connection.scalar(
         "select team_id from project where id = %d"
         % todo.project_id)
