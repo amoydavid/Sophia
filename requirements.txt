@@ -7,3 +7,4 @@ flask-bcrypt
 flask-wtf
 flask-restful
 PIL
+markdown
