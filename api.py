@@ -27,9 +27,9 @@ def project_todolists(project_id):
 @login_required
 def todolist_todos(list_id):
     if request.args.get('done') != 'all':
-        todos = Todo.query.filter_by(list_id=list_id).filter_by(done=0).order_by('id desc').all()
+        todos = Todo.query.filter_by(list_id=list_id).filter_by(done=0).order_by('priority desc, id desc').all()
     else:
-        todos = Todo.query.filter_by(list_id=list_id).order_by('id desc').all()
+        todos = Todo.query.filter_by(list_id=list_id).order_by('priority desc, id desc').all()
     return str(todos)
 
 
@@ -135,6 +135,7 @@ def delete_file():
         db.session.commit()
     return '1'
 
+
 @api.route('/todo/link/<int:from_id>/<int:to_id>/', methods=['POST'])
 @login_required
 def link_todo(from_id, to_id):
@@ -149,3 +150,15 @@ def link_todo(from_id, to_id):
     db.session.add(notify)
     db.session.commit()
     return '链接成功'
+
+
+@api.route('/todo/move/<int:todo_id>/', methods=['POST'])
+@login_required
+def move_todo(todo_id):
+    todolist_id = request.form.get('todolist_id')
+    index = request.form.get('index')
+    todo = Todo.query.get(todo_id)
+    todo.move(todolist_id, index)
+    return '操作成功'
+
+

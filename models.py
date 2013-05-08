@@ -195,9 +195,9 @@ class Todolist(db.Model):
 
     def todos(self, done=0, limit=None):
         if not limit:
-            todos = Todo.query.filter_by(list_id=self.id, done=done).order_by('priority desc')[0:limit]
+            todos = Todo.query.filter_by(list_id=self.id, done=done).order_by('priority desc, id desc')[0:limit]
         else:
-            todos = Todo.query.filter_by(list_id=self.id, done=done).order_by('priority desc')
+            todos = Todo.query.filter_by(list_id=self.id, done=done).order_by('priority desc, id desc')
         return todos
 
 
@@ -209,7 +209,7 @@ class Todo(db.Model):
     finished_at = db.Column(db.Integer, nullable=True)
     creator_id = db.Column(db.Integer)
     list_id = db.Column(db.Integer)
-    priority = db.Column(db.Integer, default=0)
+    priority = db.Column(db.Integer, default=-1)
     point = db.Column(db.Integer, default=0)
     subject = db.Column(db.String(256), nullable=False)
     done = db.Column(db.SmallInteger, default=0)
@@ -224,6 +224,40 @@ class Todo(db.Model):
     _old_done = 0
     project = db.relationship('Project')
     todolist = db.relationship('Todolist', uselist=False, foreign_keys=list_id, primaryjoin=list_id == Todolist.id)
+
+    def move(self, todolist_id, new_index):
+        new_index = int(new_index)
+        self.list_id = todolist_id
+        db.session.add(self)
+        db.session.commit()
+        todos = Todo.query.filter_by(list_id=todolist_id).filter_by(done=0).order_by('priority desc, id desc').all()
+        total = len(todos)
+        i = 0
+        old_todo_index = -1
+        old_priority = -1
+        to_move_down = -1
+        from_move_down = -1
+        for _todo in todos:
+            priority = total - i - 1
+            _todo.priority = priority
+            db.session.add(_todo)
+            db.session.commit()
+            if _todo.id == self.id:
+                from_move_down = i
+            i += 1
+        if from_move_down < new_index:
+            for _todo in todos[from_move_down:new_index]:
+                _todo.priority += 1
+                db.session.add(_todo)
+                db.session.commit()
+        elif from_move_down > new_index:
+            for _todo in todos[new_index:from_move_down]:
+                _todo.priority -= 1
+                db.session.add(_todo)
+                db.session.commit()
+        self.priority = total - new_index - 1
+        db.session.add(self)
+        db.session.commit()
 
     def _get_attachments(self):
         return db.object_session(self).query(Attachment).filter(Attachment.root_id == self.id,

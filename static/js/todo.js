@@ -269,13 +269,14 @@ var TodoListView = Backbone.View.extend({
         'click .btn-create-todo':'createOnClick'
     },
     clickDone:function(){
-        console.log('done');
+        //console.log('done');
     },
     render:function(){
         var model = this.model.toJSON();
         model.team_users = G.team_users;
         var html = Mustache.render(this.template(), model);
         this.$el.html(html);
+        this.$el.data('todolist_id', this.model.id);
         this.input = this.$el.find('.todo-content');
         this.bindNewTodoEvent();
         var self = this;
@@ -291,6 +292,36 @@ var TodoListView = Backbone.View.extend({
             }
             self.$el.find('.todo-form .due.add-on').text(date_text)
         });
+        this.$el.find('.todos.todos-uncompleted').sortable({
+            stop: function( event, ui ) {
+                var $li = $(ui.item);
+                var index = $li.index();
+                var list_id = $li.parents('.todolist').data('todolist_id');
+                var todo_id = $li.find('input').data('todo-id');
+                $.ajax({
+                    method:'post',
+                    url:'/api/todo/move/'+todo_id+'/',
+                    data:{
+                        todolist_id:list_id,
+                        index:index
+                    },
+                    success:function(text){
+                        $.pnotify({
+                            text: text,
+                            type: 'info',
+                            styling: 'bootstrap',
+                            delay:2000,
+                            history: false,
+                            stack: false
+                        });
+                    }
+                });
+            },
+            connectWith: ".todos.todos-uncompleted",
+            revert: true
+
+        });
+        this.$el.find('.todos, .todos li').disableSelection();
         return this;
     },
     addOne: function(todo) {
