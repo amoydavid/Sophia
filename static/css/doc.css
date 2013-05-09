@@ -404,7 +404,13 @@ h2{
     float: left;
     margin: 0 0 0 20px;
 }
-file-list .file .file-info .title .name {
+.file-list .file .file-info .title .name {
     display: block;
     color: #333333;
+}
+.todo.editing .edit,.todo .todo-content {
+    display: block;
+}
+.todo .edit,.todo.editing .todo-content {
+    display: none;
 }

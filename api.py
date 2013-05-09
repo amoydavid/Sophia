@@ -80,6 +80,7 @@ def todo_put(todo_id):
         if data['due_date']:
             todo.due_date = data['due_date']
         todo.updated_user_id = current_user.id
+        todo.subject = data['subject']
         db.session.commit()
     todo_obj = json.loads(str(todo))
     todo_obj['code'] = 0

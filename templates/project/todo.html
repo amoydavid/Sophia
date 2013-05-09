@@ -64,8 +64,9 @@
             <!--span class="runner on" title="xx正在做这条任务">
                 <img alt="xx" class="avatar" src="xx">
             </span-->
-            {{ subject }}
+            <span class="subject">{{ subject }}</span>
         </div>
+        <div class='edit'><input/></div>
         <div class='todo-badges'>
         {{#done}}
         <span class="badge todo-finished badge-info">{{ finish_user.name }} 完成于 {{ finished_at }}</span>

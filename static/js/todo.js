@@ -89,16 +89,36 @@ var TodoView = Backbone.View.extend({
     },
     events: {
         "click .todo-checkbox"   : "toggleDone",
-        "click .todo-assignee": "assignUser"
+        "click .todo-assignee": "assignUser",
+        "click .todo-content .subject": 'edit',
+        'keypress .edit':'updateOnEnter'
     },
     template: function(){
         return $('#todo-template').html();
+    },
+    edit:function(){
+        this.$el.addClass("editing");
+        this.editInput.val(this.model.get('subject'));
+        this.editInput.focus();
+    },
+    closeEdit: function() {
+        var value = this.editInput.val();
+        if (!value) {
+            this.$el.removeClass("editing");
+        } else {
+            this.model.save({subject: value});
+            this.$el.removeClass("editing");
+        }
+    },
+    updateOnEnter: function(e) {
+        if (e.keyCode == 13) this.closeEdit();
     },
     render:function(){
         var html = Mustache.render(this.template(), this.model.toJSON());
         this.$el.html(html);
         var self = this;
         this.$el.find('.link').data('todo_id', this.model.id);
+        this.editInput = this.$el.find('.edit input');
         this.$el.find('.due-date').datepicker({
             format: 'yyyy-mm-dd',
             language:'zh-CN',
