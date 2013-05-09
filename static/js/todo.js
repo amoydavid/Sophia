@@ -91,7 +91,8 @@ var TodoView = Backbone.View.extend({
         "click .todo-checkbox"   : "toggleDone",
         "click .todo-assignee": "assignUser",
         "click .todo-content .subject": 'edit',
-        'keypress .edit':'updateOnEnter'
+        'keypress .editInput':'updateOnEnter',
+        'blur .editInput':'closeEdit'
     },
     template: function(){
         return $('#todo-template').html();
@@ -119,6 +120,9 @@ var TodoView = Backbone.View.extend({
         var self = this;
         this.$el.find('.link').data('todo_id', this.model.id);
         this.editInput = this.$el.find('.edit input');
+        this.editInput.on('blur', function(){
+
+        });
         this.$el.find('.due-date').datepicker({
             format: 'yyyy-mm-dd',
             language:'zh-CN',

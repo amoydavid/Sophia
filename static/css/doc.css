@@ -409,7 +409,7 @@ h2{
     color: #333333;
 }
 .todo.editing .edit,.todo .todo-content {
-    display: block;
+    display: inline-block;
 }
 .todo .edit,.todo.editing .todo-content {
     display: none;
