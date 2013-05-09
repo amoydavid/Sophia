@@ -92,10 +92,25 @@ var TodoView = Backbone.View.extend({
         "click .todo-assignee": "assignUser",
         "click .todo-content .subject": 'edit',
         'keypress .editInput':'updateOnEnter',
-        'blur .editInput':'closeEdit'
+        'blur .editInput':'closeEdit',
+        'click .todo-delete':'clear'
     },
     template: function(){
         return $('#todo-template').html();
+    },
+    clear:function(){
+        if(window.confirm('确认要删除吗？')) {
+            var url = '/lists/'+this.model.get('list_id')+'/';
+            $.ajax({
+                method:'delete',
+                url:this.model.url(),
+                success:function(){
+                    window.location.href = url;
+                }
+            });
+            //this.model.destroy();
+            //window.location.href = url;
+        }
     },
     edit:function(){
         this.$el.addClass("editing");

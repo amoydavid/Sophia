@@ -27,9 +27,9 @@ def project_todolists(project_id):
 @login_required
 def todolist_todos(list_id):
     if request.args.get('done') != 'all':
-        todos = Todo.query.filter_by(list_id=list_id).filter_by(done=0).order_by('priority desc, id desc').all()
+        todos = Todo.query.filter_by(list_id=list_id).filter_by(done=0, is_del=0).order_by('priority desc, id desc').all()
     else:
-        todos = Todo.query.filter_by(list_id=list_id).order_by('priority desc, id desc').all()
+        todos = Todo.query.filter_by(list_id=list_id, is_del=0).order_by('priority desc, id desc').all()
     return str(todos)
 
 
@@ -87,6 +87,16 @@ def todo_put(todo_id):
     todo_obj['message'] = u'%s 更新成功' % todo.subject
     return json.dumps(todo_obj)
 
+
+@api.route("/todo/<int:todo_id>", methods=['DELETE'])
+@login_required
+def todo_delete(todo_id):
+    todo = Todo.query.get(todo_id)
+    todo.is_del = 1
+    db.session.add(todo)
+    db.session.commit()
+    json_obj = {'code': 0, 'message': '删除成功'}
+    return json.dumps(json_obj)
 
 from config import ALLOWED_EXTENSIONS, UPLOAD_FOLDER
 

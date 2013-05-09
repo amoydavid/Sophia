@@ -35,6 +35,8 @@
 {{ feed.actor.name }} 将 <a href="{{ url_for('todo_show', todo_id=feed.todo_id) }}">{{ feed.todo.subject }}</a> 标记为完成
 {%- elif feed.operation == 'reopen' %}
 {{ feed.actor.name }} 重新打开了 <a href="{{ url_for('todo_show', todo_id=feed.todo_id) }}">{{ feed.todo.subject }}</a>
+{%- elif feed.operation == 'delete' %}
+    {{ feed.actor.name }} 删除了 <span class="label">{{ feed.todo.subject }}</span>
 {%- elif feed.operation == 'due_date' %}
 {{ feed.actor.name }} 将 <a href="{{ url_for('todo_show', todo_id=feed.todo_id) }}">{{ feed.todo.subject }}</a> 的完成时间由 <span class="label">{{ feed.old_value }}</span> 改为了 <span class="label">{{ feed.new_value }}</span>
 {%- elif feed.operation == 'assign' %}

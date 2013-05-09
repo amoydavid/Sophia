@@ -208,6 +208,7 @@ class Todo(db.Model):
     updated_at = db.Column(db.Integer)
     finished_at = db.Column(db.Integer, nullable=True)
     creator_id = db.Column(db.Integer)
+    is_del = db.Column(db.Integer, default=0)
     list_id = db.Column(db.Integer)
     priority = db.Column(db.Integer, default=-1)
     point = db.Column(db.Integer, default=0)
@@ -233,9 +234,6 @@ class Todo(db.Model):
         todos = Todo.query.filter_by(list_id=todolist_id).filter_by(done=0).order_by('priority desc, id desc').all()
         total = len(todos)
         i = 0
-        old_todo_index = -1
-        old_priority = -1
-        to_move_down = -1
         from_move_down = -1
         for _todo in todos:
             priority = total - i - 1
@@ -297,6 +295,7 @@ class Todo(db.Model):
             'id': self.id,
             'subject': self.subject,
             'project_id': self.project_id,
+            'list_id': self.list_id,
             'done': self.done,
             'due_date': due_date,
             'finished_at': friendly_datetime(self.finished_at),
@@ -444,6 +443,15 @@ def feed_due_todo(connection, todo, old_due_date):
                         int(time.time()), old_due_date, todo.due_date))
 
 
+def feed_set_todo_del(connection, todo):
+    team_id = connection.scalar(
+        "select team_id from project where id = %d"
+        % todo.project_id)
+    connection.execute('insert into feed (team_id,project_id,user_id,todo_id,operation,created_at) '
+                       'values(%i, %i, %i, %i, "delete", %i)' %
+                       (int(team_id), int(todo.project_id), int(todo.updated_user_id), int(todo.id),
+                        int(time.time())))
+
 def after_insert_topic(mapper, connection, target):
     if target.is_comment != 1:
         connection.execute('update project set topic_count = topic_count+1 where id = %i' % int(target.project_id))
@@ -461,20 +469,24 @@ def after_insert_todo(mapper, connection, target):
 
 def before_update_todo(mapper, connection, target):
     result = connection.execute(
-        "select done,assignee_uid,due_date from todo where id = %d"
+        "select done,assignee_uid,due_date,is_del from todo where id = %d"
         % target.id)
     for row in result:
         target._old_done = row['done']
         target._old_assignee_uid = row['assignee_uid']
         target._old_due_date = row['due_date']
+        target._old_is_del = row['is_del']
         break
-
     if target._old_done == 0 and target.done == 1:
         target.finished_at = int(time.time())
         #connection.execute('update todo set finished_at = %d where id = %i' % (int(time.time()), int(target.id)))
 
 
 def after_update_todo(mapper, connection, target):
+    if target.is_del == 1 and target._old_is_del == 0:
+        connection.execute(
+            'update todo_list set todo_count=todo_count-1 where id = %i' % int(target.list_id))
+        feed_set_todo_del(connection, target)
     if target._old_done == 0 and target.done == 1:
         list_id = int(target.list_id)
         connection.execute('update todo_list set finish_count = finish_count+1 where id = %i' % list_id)
