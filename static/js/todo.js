@@ -291,6 +291,31 @@ var TodoList = Backbone.Collection.extend({
     }
 });
 
+var MyTodoList = Backbone.Collection.extend({
+    model: Todo,
+    url: function(){
+        return '/api/my_todo.json';
+    },
+    initialize: function() {
+        this.on('reset', function(){
+            if(this.models.length>0) {
+                _.map(this.models, function(model){
+                    var _todo = new TodoView({model:model});
+                    _todo.render();
+                    if(!model.get('done')){
+                        $('#my-todos').append(_todo.$el);
+                    } else{
+                        $('#my-todos-completed').append(_todo.$el);
+                    }
+                })
+            } else {
+                $('#my-todos').append('<li>没有要做的任务</li>');
+            }
+
+        })
+    }
+});
+
 
 var TodoListView = Backbone.View.extend({
     className:'todolist',

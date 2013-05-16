@@ -30,7 +30,7 @@
             <a class="brand" href="/">{{ g.app.name }}</a>
             <div class="nav-collapse" id="main-menu">
                 <ul class="nav" id="main-menu-left">
-                    <li><a href="{{ url_for("run") }}">项目</a></li>
+                    <li><a href="{{ url_for("my_projects") }}">项目</a></li>
                     <li><a href="{{ url_for('team_index') }}">团队</a></li>
                     <li><a href="{{ url_for('user.show', user_id=current_user.id) }}">我自己</a></li>
                 </ul>

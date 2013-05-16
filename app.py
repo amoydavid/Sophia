@@ -24,14 +24,26 @@ def load_app():
 def run():
     user_id = current_user.id
     if user_id:
-        if not current_user.teams:
-            return redirect(url_for('team_index'))
-        projects = current_user.projects()
-        if not projects:
-            return redirect(url_for('project_create'))
-        return render_template('index.html', projects=projects)
+        return redirect(url_for('dashboard'))
     else:
         return redirect(url_for('user.login'))
+
+
+@app.route('/projects/')
+@login_required
+def my_projects():
+    if not current_user.teams:
+        return redirect(url_for('team_index'))
+    projects = current_user.projects()
+    if not projects:
+        return redirect(url_for('project_create'))
+    return render_template('index.html', projects=projects)
+
+
+@app.route('/dashboard/')
+@login_required
+def dashboard():
+    return render_template('dashboard.html', user=current_user)
 
 
 @app.route('/team/')

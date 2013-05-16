@@ -33,6 +33,16 @@ def todolist_todos(list_id):
     return str(todos)
 
 
+@api.route("/my_todo.json")
+@login_required
+def my_todos():
+    if request.args.get('done') != 'all':
+        todos = Todo.query.filter_by(assignee_uid=current_user.id, done=0, is_del=0).order_by('priority desc, id desc').all()
+    else:
+        todos = Todo.query.filter_by(assignee_uid=current_user.id, is_del=0).order_by('priority desc, id desc').all()
+    return str(todos)
+
+
 @api.route("/lists/<int:list_id>/todos.json", methods=['POST'])
 @login_required
 def todolist_new_todo(list_id):

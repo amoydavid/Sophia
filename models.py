@@ -308,6 +308,8 @@ class Todo(db.Model):
                 'avatar': self.creator.avatar
             },
             'finish_user': finish_user,
+            'project': {'name': self.project.name},
+            'list': {'name': self.todolist.name},
             'assignee': assignee
         }
         return json.dumps(obj)

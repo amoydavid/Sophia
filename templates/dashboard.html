@@ -1,0 +1,84 @@
+{% extends 'layout/base.html' %}
+{% block body_class %}user_profile{% endblock %}
+{% from 'project/_project_todos.html' import head_js with context%}
+{% block all_title %}{{ g.app.name }}{% endblock %}
+{% block head_js %}
+{{ head_js() }}
+{% endblock %}
+{% block content %}
+    <div class="row-fluid">
+        <div class="span2 avatar-wrap">
+            <img src="{{ url_for('uploaded_avatar', filename=user.avatar) }}" class="avatar">
+        </div>
+        <div class="span22">
+            <h2>{{ user.name }}</h2>
+            <p>{{ user.email }}</p>
+        </div>
+    </div>
+
+    <div class="row-fluid ">
+        <div class="todolist">
+            <div class="title">
+            <h4>我要完成的任务</h4>
+            </div>
+            <ul id="my-todos"></ul>
+        </div>
+    </div>
+    {%- raw %}
+    <script type="template" id='todo-template'>
+        <div class="todo-wrap">
+
+            <input type="checkbox" name="todo-done" class='todo-checkbox' data-todo-id='{{id}}' {{#done}} checked="checked"{{/done}}/>
+            <!--span class="runner on" title="xx正在做这条任务">
+                <img alt="xx" class="avatar" src="xx">
+            </span-->
+            <span class="label project-todolist">{{ list.name }}</span>
+            <span class="todo-content"><a href="/todo/{{ id }}/">{{ subject }}</a></span>
+            {{^done}}
+            <a href="javascript:" class="link btn-mini btn" data-title='提示' data-content="把此图标拖到其它todo上，当此任务完成时就会通知下个任务"><i class="icon-random"></i></a>
+            {{/done}}
+            {{#reply_count}}
+            <a href="/todo/{{ id }}/" class="badge">{{ reply_count }}评论</a>
+            {{/reply_count}}
+
+            {{#done}}
+            <span class="badge todo-finished badge-info">{{ finish_user.name }} {{ finished_at }}</span>
+            {{/done}}
+            {{^done}}
+            <a href="javascript:" class="badge todo-assignee"></a>
+            <a href="javascript:" class="badge due-date">没有截止时间</a>
+            {{#point}}<span class="badge point">{{ point }} point</span>{{/point}}
+            {{/done}}
+        </div>
+    </script>
+    {%- endraw %}
+    <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="myModalLabel">指派任务</h3>
+        </div>
+        <div class="modal-body">
+            <form>
+                <label for="assignee">指派给</label>
+                <select class="assignee" id="assignee">
+                    <option value="0">暂不指定</option>
+                    <option disabled="disabled">-----</option>
+                    {%- for user in team_users %}
+                        <option value="{{ user.id }}">{{ user.name }}</option>
+                    {%- endfor %}
+                </select>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+            <button class="btn btn-primary">保存</button>
+        </div>
+    </div>
+    <script>
+    $(document).ready(function(){
+        var my_todos = new MyTodoList();
+        my_todos.fetch();
+
+    });
+    </script>
+{% endblock %}
